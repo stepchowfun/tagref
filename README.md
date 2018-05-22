@@ -28,7 +28,7 @@ The syntax is `[tag:label]` for tags and `[ref:label]` for references. Tagref wo
 
 ## Installation
 
-If you are running macOS or a GNU-based Linux on an x86-64 CPU, the following will install Tagref to `/usr/local/bin`:
+If you are running macOS or a GNU-based Linux on an x86-64 CPU, the following will install Tagref in `/usr/local/bin`:
 
 ```sh
 curl -LSfs https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh | sudo sh

@@ -20,7 +20,7 @@ pub struct Label {
   pub line_number: i64,
 }
 
-// Sometimes we need to be able to print a tag.
+// Sometimes we need to be able to print a label.
 impl fmt::Display for Label {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
@@ -37,7 +37,7 @@ impl fmt::Display for Label {
   }
 }
 
-// This function returns all the tags in a file.
+// This function returns all the labels in a file for a given type.
 pub fn parse(label_type: LabelType, path: &str, contents: &str) -> Vec<Label> {
   let regex = Regex::new(
     match label_type {
@@ -46,14 +46,14 @@ pub fn parse(label_type: LabelType, path: &str, contents: &str) -> Vec<Label> {
     }
   ).unwrap();
 
-  let mut tags: Vec<Label> = Vec::new();
+  let mut labels: Vec<Label> = Vec::new();
   let mut line_number = 1;
 
   for line in contents.lines() {
     for captures in regex.captures_iter(line) {
       // If we got a match, then captures.get(1) is guaranteed to return a
       // Some. Hence we are justified in unwrapping.
-      tags.push(Label {
+      labels.push(Label {
         label_type: label_type,
         label: captures.get(1).unwrap().as_str().trim().to_string(),
         path: path.to_string(),
@@ -63,7 +63,7 @@ pub fn parse(label_type: LabelType, path: &str, contents: &str) -> Vec<Label> {
     line_number += 1;
   }
 
-  tags
+  labels
 }
 
 #[cfg(test)]
@@ -111,17 +111,17 @@ mod tests {
       [ref:label1]
     ".trim().to_string();
 
-    let tags = parse(
+    let references = parse(
       LabelType::Ref,
       &path,
       &contents
     );
 
-    assert_eq!(tags.len(), 1);
-    assert_eq!(tags[0].label_type, LabelType::Ref);
-    assert_eq!(tags[0].label, "label1");
-    assert_eq!(tags[0].path, path);
-    assert_eq!(tags[0].line_number, 1);
+    assert_eq!(references.len(), 1);
+    assert_eq!(references[0].label_type, LabelType::Ref);
+    assert_eq!(references[0].label, "label1");
+    assert_eq!(references[0].path, path);
+    assert_eq!(references[0].line_number, 1);
   }
 
   #[test]

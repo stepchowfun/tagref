@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 // This function checks that all the vectors in tags_map have a single element.
-// If all the tags are unique, a map from label to tag is returned. Otherwise,
-// an error message is returned instead.
+// If that condition holds, a map from label to tag is returned. Otherwise, an
+// error message is returned instead.
 pub fn check(
   tags_map: &HashMap<String, Vec<super::label::Label>>
 ) -> Result<HashMap<String, super::label::Label>, String> {
