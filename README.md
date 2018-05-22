@@ -31,7 +31,7 @@ The syntax is `[tag:label]` for tags and `[ref:label]` for references. Tagref wo
 If you are running macOS or a GNU-based Linux on an x86-64 CPU, the following will install Tagref to `/usr/local/bin`:
 
 ```sh
-curl -LSf https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh | sudo sh
+curl -LSfs https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh | sudo sh
 ```
 
 If you want to install to a different location, you can download a binary from the [releases page](https://github.com/stepchowfun/tagref/releases) and put it anywhere on your `$PATH`. If there is no pre-built binary available for your platform, you can build and install it with [Cargo](https://doc.rust-lang.org/book/second-edition/ch14-04-installing-binaries.html).
