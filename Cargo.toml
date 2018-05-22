@@ -1,0 +1,20 @@
+[package]
+name = "tagref"
+version = "0.0.0"
+authors = ["Stephan Boyer <stephan@stephanboyer.com>"]
+description = "Tagref helps you refer to other locations in your codebase."
+license = "MIT"
+documentation = "https://github.com/stepchowfun/tagref"
+homepage = "https://github.com/stepchowfun/tagref"
+repository = "https://github.com/stepchowfun/tagref"
+readme = "README.md"
+
+[dependencies]
+colored = "1"
+ignore = "0.4"
+regex = "1"
+
+[dependencies.clap]
+version = "2"
+default-features = true
+features = ["wrap_help"]
