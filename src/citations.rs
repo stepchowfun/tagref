@@ -12,9 +12,7 @@ pub fn check(
   for reference in references {
     if !tags.contains_key(&reference.label) {
       missing_tags = true;
-      error.push_str(
-        &format!("No tag found for {}.\n", reference)
-      );
+      error.push_str(&format!("No tag found for {}.\n", reference));
     }
   }
 

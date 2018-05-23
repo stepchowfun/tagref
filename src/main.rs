@@ -63,8 +63,8 @@ fn main() {
     for tag in label::parse(label::LabelType::Tag, path, contents) {
       tags_map.entry(
         tag.label.clone()
-      ).or_insert(
-        Vec::new()
+      ).or_insert_with(
+        Vec::new
       ).push(
         tag.clone()
       );
@@ -84,8 +84,6 @@ fn main() {
       // Parse all the references.
       let mut references = Vec::new();
       let files_scanned = walk::walk(dir, |path, contents| {
-        // We know that the regex is well-formed, so we are justified in
-        // unwrapping.
         references.extend(label::parse(label::LabelType::Ref, path, contents));
       });
 
