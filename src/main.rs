@@ -60,17 +60,14 @@ fn main() {
   // duplicates. We will report duplicates later.
   let mut tags_map = HashMap::new();
   let _ = walk::walk(dir, |path, contents| {
-    // We know that the regex is well-formed, so we are justified in
-    // unwrapping.
     for tag in label::parse(label::LabelType::Tag, path, contents) {
-      // Make sure the key exists in the map.
-      if !tags_map.contains_key(&tag.label) {
-        tags_map.insert(tag.label.clone(), Vec::new());
-      }
-
-      // Insert the tag into the map. Now that the key certainly exists, we are
-      // justified in calling unwrap here.
-      tags_map.get_mut(&tag.label).unwrap().push(tag.clone());
+      tags_map.entry(
+        tag.label.clone()
+      ).or_insert(
+        Vec::new()
+      ).push(
+        tag.clone()
+      );
     }
   });
 
