@@ -4,14 +4,12 @@ use std::fmt;
 const TAG_REGEX:&str = r"(?i)\[\s*tag\s*:([^\]]*)\]";
 const REFERENCE_REGEX:&str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
 
-// A label can be either a tag or a reference.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LabelType {
   Tag,
   Ref,
 }
 
-// This struct represents a tag or a reference.
 #[derive(Clone, Debug)]
 pub struct Label {
   pub label_type: LabelType,
