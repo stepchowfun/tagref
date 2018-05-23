@@ -4,7 +4,7 @@
 PREFIX=/usr/local/bin
 
 # Which version to download
-RELEASE=v0.0.2
+RELEASE=v0.0.3
 
 # Determine which binary to download.
 FILENAME=''
