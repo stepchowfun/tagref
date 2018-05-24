@@ -28,13 +28,42 @@ The syntax is `[tag:label]` for tags and `[ref:label]` for references. Tagref wo
 
 ## Installation
 
-If you are running macOS or a GNU-based Linux on an x86-64 CPU, the following will install Tagref in `/usr/local/bin`:
+### Default installation
+
+If you are running macOS or a GNU-based Linux on an x86-64 CPU, you can install Tagref with this command:
 
 ```sh
 curl -LSfs https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh | sudo sh
 ```
 
-If you want to install to a different location, you can download a binary from the [releases page](https://github.com/stepchowfun/tagref/releases) and put it anywhere on your `$PATH`. If there is no pre-built binary available for your platform, you can build and install it with [Cargo](https://doc.rust-lang.org/book/second-edition/ch14-04-installing-binaries.html).
+The same command can be used to update Tagref to the latest version.
+
+### Custom installation
+
+The installation script supports the following environment variables:
+
+- `VERSION=x.y.z` (defaults to the latest version)
+- `PREFIX=/path/to/install` (defaults to `/usr/local/bin`)
+
+For example, the following will install Tagref into the current directory:
+
+```sh
+curl -LSfs https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh | PREFIX=. sh
+```
+
+### Installation on other platforms
+
+If there is no pre-built binary available for your platform, you can build and install Tagref with [Cargo](https://doc.rust-lang.org/book/second-edition/ch14-04-installing-binaries.html):
+
+```sh
+cargo install tagref
+```
+
+Then you can update Tagref to the latest version using the `--force` flag:
+
+```sh
+cargo install tagref --force
+```
 
 ## Usage
 
