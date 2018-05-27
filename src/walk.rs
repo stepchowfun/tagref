@@ -16,7 +16,7 @@ pub fn walk<T: FnMut(&str, &str) -> ()>(path: &str, mut callback: T) -> usize {
         let mut possible_file = File::open(dir_entry.path());
         if let Ok(mut file) = possible_file {
           let mut contents = String::new();
-          if let Ok(_) = file.read_to_string(&mut contents) {
+          if file.read_to_string(&mut contents).is_ok() {
             files_scanned += 1;
             callback(
               &dir_entry.path().to_string_lossy().into_owned(),

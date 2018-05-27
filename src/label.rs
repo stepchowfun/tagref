@@ -52,10 +52,10 @@ pub fn parse(label_type: LabelType, path: &str, contents: &str) -> Vec<Label> {
       // If we got a match, then captures.get(1) is guaranteed to return a
       // Some. Hence we are justified in unwrapping.
       labels.push(Label {
-        label_type: label_type,
+        label_type,
         label: captures.get(1).unwrap().as_str().trim().to_string(),
         path: path.to_string(),
-        line_number: line_number,
+        line_number,
       });
     }
     line_number += 1;

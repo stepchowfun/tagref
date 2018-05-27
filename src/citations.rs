@@ -4,7 +4,7 @@ use std::collections::HashMap;
 // tag is encountered, an error message is returned.
 pub fn check(
   tags: &HashMap<String, super::label::Label>,
-  references: &Vec<super::label::Label>
+  references: &[super::label::Label]
 ) -> Option<String> {
   let mut error = String::new();
   let mut missing_tags = false;

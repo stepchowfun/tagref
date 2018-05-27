@@ -76,7 +76,7 @@ fn main() {
     Ok(tags) => {
       // Handle the --list-tags flag if necessary.
       if list_tags {
-        for (_, tag) in &tags {
+        for tag in tags.values() {
           println!("{}", tag);
         }
       }
@@ -106,8 +106,8 @@ fn main() {
               "{}",
               format!(
                 "{} and {} validated in {}.",
-                count::count(tags.len().into(), "tag"),
-                count::count(references.len().into(), "reference"),
+                count::count(tags.len(), "tag"),
+                count::count(references.len(), "reference"),
                 count::count(files_scanned, "file")
               ).green()
             );
