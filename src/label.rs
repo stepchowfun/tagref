@@ -66,7 +66,7 @@ pub fn parse(label_type: Type, path: &str, contents: &str) -> Vec<Label> {
 
 #[cfg(test)]
 mod tests {
-  use label::{Type, parse};
+  use crate::label::{Type, parse};
 
   #[test]
   fn parse_empty() {

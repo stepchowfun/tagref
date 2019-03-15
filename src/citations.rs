@@ -25,8 +25,8 @@ pub fn check(
 
 #[cfg(test)]
 mod tests {
-  use citations::check;
-  use label::{Label, Type};
+  use crate::citations::check;
+  use crate::label::{Label, Type};
   use std::collections::HashMap;
 
   #[test]

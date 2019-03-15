@@ -1,8 +1,3 @@
-extern crate clap;
-extern crate colored;
-extern crate ignore;
-extern crate regex;
-
 mod citations;
 mod count;
 mod duplicates;

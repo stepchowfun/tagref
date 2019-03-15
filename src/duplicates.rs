@@ -36,8 +36,8 @@ pub fn check(
 
 #[cfg(test)]
 mod tests {
-  use duplicates::check;
-  use label::{Label, Type};
+  use crate::duplicates::check;
+  use crate::label::{Label, Type};
   use std::collections::HashMap;
 
   #[test]
