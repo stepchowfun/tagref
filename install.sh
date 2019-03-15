@@ -28,17 +28,25 @@ if [ -z "$FILENAME" ]; then
   exit 1
 fi
 
+# Find a temporary location for the binary.
+TEMPFILE=$(mktemp /tmp/tagref.XXXXXXXX)
+
 # Download the binary.
-if ! curl -LSf "https://github.com/stepchowfun/tagref/releases/download/$RELEASE/$FILENAME" -o "$DESTINATION"; then
+if ! curl "https://github.com/stepchowfun/tagref/releases/download/$RELEASE/$FILENAME" -o "$TEMPFILE" -LSf; then
   echo 'There was an error downloading the binary.' 1>&2
+  rm "$TEMPFILE"
   exit 1
 fi
 
 # Make it executable.
-if ! chmod a+rx "$DESTINATION"; then
+if ! chmod a+rx "$TEMPFILE"; then
   echo 'There was an error setting the permissions for the binary.' 1>&2
+  rm "$TEMPFILE"
   exit 1
 fi
+
+# Install it at the requested destination.
+sudo mv "$TEMPFILE" "$DESTINATION" < /dev/tty
 
 # Let the user know it worked.
 echo 'Tagref is now installed.'

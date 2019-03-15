@@ -33,7 +33,7 @@ The syntax is `[tag:label]` for tags and `[ref:label]` for references. Tagref wo
 If you are running macOS or a GNU-based Linux on an x86-64 CPU, you can install Tagref with this command:
 
 ```sh
-curl -LSfs https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh | sudo sh
+curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | sh
 ```
 
 The same command can be used to update Tagref to the latest version.
@@ -48,7 +48,7 @@ The installation script supports the following environment variables:
 For example, the following will install Tagref into the current directory:
 
 ```sh
-curl -LSfs https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh | PREFIX=. sh
+curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | PREFIX=. sh
 ```
 
 ### Installation on other platforms
