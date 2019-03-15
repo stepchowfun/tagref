@@ -11,7 +11,7 @@ pub fn count(n: usize, noun: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-  use count::count;
+  use crate::count::count;
 
   #[test]
   fn count_zero() {

@@ -2,7 +2,7 @@ use ignore::Walk;
 use std::fs::File;
 use std::io::prelude::Read;
 
-// This function visits each file in the current directory and calls the given
+// This function visits each file in the given directory and calls the given
 // callback with the path and the contents of the file. The number of files
 // scanned is returned.
 pub fn walk<T: FnMut(&str, &str) -> ()>(path: &str, mut callback: T) -> usize {
@@ -13,7 +13,7 @@ pub fn walk<T: FnMut(&str, &str) -> ()>(path: &str, mut callback: T) -> usize {
       // Here, file_type() should always return a Some. It could only return
       // None if the file represents STDIN, and that isn't the case here.
       if dir_entry.file_type().unwrap().is_file() {
-        let mut possible_file = File::open(dir_entry.path());
+        let possible_file = File::open(dir_entry.path());
         if let Ok(mut file) = possible_file {
           let mut contents = String::new();
           if file.read_to_string(&mut contents).is_ok() {

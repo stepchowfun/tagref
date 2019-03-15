@@ -8,6 +8,7 @@ documentation = "https://github.com/stepchowfun/tagref"
 homepage = "https://github.com/stepchowfun/tagref"
 repository = "https://github.com/stepchowfun/tagref"
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
 colored = "1"
