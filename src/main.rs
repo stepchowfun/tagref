@@ -13,6 +13,10 @@ use colored::Colorize;
 use std::collections::HashMap;
 use std::process;
 
+const CHECK_COMMAND: &str = "check";
+const LIST_TAGS_COMMAND: &str = "list-tags";
+const LIST_REFS_COMMAND: &str = "list-refs";
+
 // Welcome to Tagref! The fun starts here.
 fn main() {
   // Set up the command-line interface.
@@ -36,31 +40,31 @@ fn main() {
         .help("Sets the path of the directory to scan")
         .takes_value(true)
       )
-    .arg(
-      clap::Arg::with_name("list-tags")
-        .short("n")
-        .long("list-tags")
-        .help("Lists all the tags")
+    .subcommand(
+      clap::SubCommand::with_name(CHECK_COMMAND)
+        .about("Check all the tags and references (default)")
       )
-    .arg(
-      clap::Arg::with_name("list-references")
-        .short("r")
-        .long("list-references")
-        .help("Lists all the references")
+    .subcommand(
+      clap::SubCommand::with_name(LIST_TAGS_COMMAND)
+        .about("List all the tags")
+      )
+    .subcommand(
+      clap::SubCommand::with_name(LIST_REFS_COMMAND)
+        .about("List all the references")
       )
     .get_matches();
 
   // Fetch the command-line arguments.
   let dir = matches.value_of("path").unwrap_or(".");
-  let list_tags = matches.is_present("list-tags");
-  let list_references = matches.is_present("list-references");
-  let check_references = !list_tags && !list_references;
+  let check_references =
+    matches.subcommand_name() == None ||
+    matches.subcommand_name() == Some(CHECK_COMMAND);
 
   // Parse all the tags into a HashMap. The values are vectors to allow for
   // duplicates. We will report duplicates later.
   let mut tags_map = HashMap::new();
   let _ = walk::walk(dir, |path, contents| {
-    for tag in label::parse(label::LabelType::Tag, path, contents) {
+    for tag in label::parse(label::Type::Tag, path, contents) {
       tags_map.entry(
         tag.label.clone()
       ).or_insert_with(
@@ -74,8 +78,8 @@ fn main() {
   // Convert tags_map into a set and check for duplicates.
   match duplicates::check(&tags_map) {
     Ok(tags) => {
-      // Handle the --list-tags flag if necessary.
-      if list_tags {
+      // Handle the LIST_TAGS_COMMAND subcommand if necessary.
+      if matches.subcommand_name() == Some(LIST_TAGS_COMMAND) {
         for tag in tags.values() {
           println!("{}", tag);
         }
@@ -84,11 +88,11 @@ fn main() {
       // Parse all the references.
       let mut references = Vec::new();
       let files_scanned = walk::walk(dir, |path, contents| {
-        references.extend(label::parse(label::LabelType::Ref, path, contents));
+        references.extend(label::parse(label::Type::Ref, path, contents));
       });
 
-      // Handle the --list-references flag if necessary.
-      if list_references {
+      // Handle the LIST_REFS_COMMAND subcommand if necessary.
+      if matches.subcommand_name() == Some(LIST_REFS_COMMAND) {
         for reference in &references {
           println!("{}", reference);
         }
@@ -96,23 +100,20 @@ fn main() {
 
       // Check the references if necessary.
       if check_references {
-        match citations::check(&tags, &references) {
-          Some(error) => {
-            eprintln!("{}", error.red());
-            process::exit(1);
-          },
-          None => {
-            println!(
-              "{}",
-              format!(
-                "{} and {} validated in {}.",
-                count::count(tags.len(), "tag"),
-                count::count(references.len(), "reference"),
-                count::count(files_scanned, "file")
-              ).green()
-            );
-          },
-        };
+        if let Some(error) = citations::check(&tags, &references) {
+          eprintln!("{}", error.red());
+          process::exit(1);
+        } else {
+          println!(
+            "{}",
+            format!(
+              "{} and {} validated in {}.",
+              count::count(tags.len(), "tag"),
+              count::count(references.len(), "reference"),
+              count::count(files_scanned, "file")
+            ).green()
+          );
+        }
       }
     },
     Err(error) => {

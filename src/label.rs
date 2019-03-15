@@ -5,14 +5,14 @@ const TAG_REGEX:&str = r"(?i)\[\s*tag\s*:([^\]]*)\]";
 const REFERENCE_REGEX:&str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum LabelType {
+pub enum Type {
   Tag,
   Ref,
 }
 
 #[derive(Clone, Debug)]
 pub struct Label {
-  pub label_type: LabelType,
+  pub label_type: Type,
   pub label: String,
   pub path: String,
   pub line_number: i64,
@@ -25,8 +25,8 @@ impl fmt::Display for Label {
       f,
       "[{}:{}] @ {}:{}",
       match self.label_type {
-        LabelType::Tag => "tag",
-        LabelType::Ref => "ref",
+        Type::Tag => "tag",
+        Type::Ref => "ref",
       },
       self.label,
       self.path,
@@ -36,11 +36,11 @@ impl fmt::Display for Label {
 }
 
 // This function returns all the labels in a file for a given type.
-pub fn parse(label_type: LabelType, path: &str, contents: &str) -> Vec<Label> {
+pub fn parse(label_type: Type, path: &str, contents: &str) -> Vec<Label> {
   let regex = Regex::new(
     match label_type {
-      LabelType::Tag => TAG_REGEX,
-      LabelType::Ref => REFERENCE_REGEX,
+      Type::Tag => TAG_REGEX,
+      Type::Ref => REFERENCE_REGEX,
     }
   ).unwrap();
 
@@ -66,7 +66,7 @@ pub fn parse(label_type: LabelType, path: &str, contents: &str) -> Vec<Label> {
 
 #[cfg(test)]
 mod tests {
-  use label::{LabelType, parse};
+  use label::{Type, parse};
 
   #[test]
   fn parse_empty() {
@@ -74,7 +74,7 @@ mod tests {
     let contents = String::new();
 
     let tags = parse(
-      LabelType::Tag,
+      Type::Tag,
       &path,
       &contents
     );
@@ -90,13 +90,13 @@ mod tests {
     ".trim().to_string();
 
     let tags = parse(
-      LabelType::Tag,
+      Type::Tag,
       &path,
       &contents
     );
 
     assert_eq!(tags.len(), 1);
-    assert_eq!(tags[0].label_type, LabelType::Tag);
+    assert_eq!(tags[0].label_type, Type::Tag);
     assert_eq!(tags[0].label, "label1");
     assert_eq!(tags[0].path, path);
     assert_eq!(tags[0].line_number, 1);
@@ -110,13 +110,13 @@ mod tests {
     ".trim().to_string();
 
     let references = parse(
-      LabelType::Ref,
+      Type::Ref,
       &path,
       &contents
     );
 
     assert_eq!(references.len(), 1);
-    assert_eq!(references[0].label_type, LabelType::Ref);
+    assert_eq!(references[0].label_type, Type::Ref);
     assert_eq!(references[0].label, "label1");
     assert_eq!(references[0].path, path);
     assert_eq!(references[0].line_number, 1);
@@ -130,13 +130,13 @@ mod tests {
     ".trim().to_string();
 
     let tags = parse(
-      LabelType::Tag,
+      Type::Tag,
       &path,
       &contents
     );
 
     assert_eq!(tags.len(), 1);
-    assert_eq!(tags[0].label_type, LabelType::Tag);
+    assert_eq!(tags[0].label_type, Type::Tag);
     assert_eq!(tags[0].label, "label2");
     assert_eq!(tags[0].path, path);
     assert_eq!(tags[0].line_number, 1);
@@ -150,17 +150,17 @@ mod tests {
     ".trim().to_string();
 
     let tags = parse(
-      LabelType::Tag,
+      Type::Tag,
       &path,
       &contents
     );
 
     assert_eq!(tags.len(), 2);
-    assert_eq!(tags[0].label_type, LabelType::Tag);
+    assert_eq!(tags[0].label_type, Type::Tag);
     assert_eq!(tags[0].label, "label3");
     assert_eq!(tags[0].path, path);
     assert_eq!(tags[0].line_number, 1);
-    assert_eq!(tags[1].label_type, LabelType::Tag);
+    assert_eq!(tags[1].label_type, Type::Tag);
     assert_eq!(tags[1].label, "label4");
     assert_eq!(tags[1].path, path);
     assert_eq!(tags[1].line_number, 1);
@@ -175,17 +175,17 @@ mod tests {
     ".trim().to_string();
 
     let tags = parse(
-      LabelType::Tag,
+      Type::Tag,
       &path,
       &contents
     );
 
     assert_eq!(tags.len(), 2);
-    assert_eq!(tags[0].label_type, LabelType::Tag);
+    assert_eq!(tags[0].label_type, Type::Tag);
     assert_eq!(tags[0].label, "label5");
     assert_eq!(tags[0].path, path);
     assert_eq!(tags[0].line_number, 1);
-    assert_eq!(tags[1].label_type, LabelType::Tag);
+    assert_eq!(tags[1].label_type, Type::Tag);
     assert_eq!(tags[1].label, "label6");
     assert_eq!(tags[1].path, path);
     assert_eq!(tags[1].line_number, 2);

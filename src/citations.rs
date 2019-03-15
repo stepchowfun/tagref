@@ -26,7 +26,7 @@ pub fn check(
 #[cfg(test)]
 mod tests {
   use citations::check;
-  use label::{Label, LabelType};
+  use label::{Label, Type};
   use std::collections::HashMap;
 
   #[test]
@@ -48,7 +48,7 @@ mod tests {
     tags.insert(
       "label1".to_string(),
       Label {
-        label_type: LabelType::Tag,
+        label_type: Type::Tag,
         label: "label1".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
@@ -57,7 +57,7 @@ mod tests {
 
     let references = vec![
       Label {
-        label_type: LabelType::Ref,
+        label_type: Type::Ref,
         label: "label1".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
@@ -78,7 +78,7 @@ mod tests {
     tags.insert(
       "label1".to_string(),
       Label {
-        label_type: LabelType::Tag,
+        label_type: Type::Tag,
         label: "label1".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
@@ -87,13 +87,13 @@ mod tests {
 
     let references = vec![
       Label {
-        label_type: LabelType::Ref,
+        label_type: Type::Ref,
         label: "label1".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
       },
       Label {
-        label_type: LabelType::Ref,
+        label_type: Type::Ref,
         label: "label2".to_string(),
         path: "file2.rs".to_string(),
         line_number: 2,
