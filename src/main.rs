@@ -8,6 +8,7 @@ use colored::Colorize;
 use std::collections::HashMap;
 use std::process;
 
+const PATH_OPTION: &str = "path";
 const CHECK_COMMAND: &str = "check";
 const LIST_TAGS_COMMAND: &str = "list-tags";
 const LIST_REFS_COMMAND: &str = "list-refs";
@@ -28,9 +29,9 @@ fn main() {
       ".replace("?", "").trim() // The '?'s are to avoid tag conflicts.
       )
     .arg(
-      clap::Arg::with_name("path")
+      clap::Arg::with_name(PATH_OPTION)
         .short("p")
-        .long("path")
+        .long(PATH_OPTION)
         .value_name("PATH")
         .help("Sets the path of the directory to scan")
         .takes_value(true)
@@ -50,7 +51,7 @@ fn main() {
     .get_matches();
 
   // Fetch the command-line arguments.
-  let dir = matches.value_of("path").unwrap_or(".");
+  let dir = matches.value_of(PATH_OPTION).unwrap_or(".");
   let check_references =
     matches.subcommand_name() == None ||
     matches.subcommand_name() == Some(CHECK_COMMAND);
