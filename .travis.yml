@@ -2,6 +2,8 @@ language: rust
 rust:
   - stable
 script:
-  - cargo build
+  - rustup component add clippy
+  - cargo clean
+  - cargo clippy -- --deny clippy::pedantic
   - cargo test
   - cargo run

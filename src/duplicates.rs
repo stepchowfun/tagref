@@ -37,7 +37,7 @@ pub fn check(
 #[cfg(test)]
 mod tests {
   use duplicates::check;
-  use label::{Label, LabelType};
+  use label::{Label, Type};
   use std::collections::HashMap;
 
   #[test]
@@ -59,7 +59,7 @@ mod tests {
 
     let tags_vec1 = vec![
       Label {
-        label_type: LabelType::Tag,
+        label_type: Type::Tag,
         label: "label1".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
@@ -68,7 +68,7 @@ mod tests {
 
     let tags_vec2 = vec![
       Label {
-        label_type: LabelType::Tag,
+        label_type: Type::Tag,
         label: "label2".to_string(),
         path: "file2.rs".to_string(),
         line_number: 2,
@@ -94,13 +94,13 @@ mod tests {
 
     let tags_vec = vec![
       Label {
-        label_type: LabelType::Tag,
+        label_type: Type::Tag,
         label: "label".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
       },
       Label {
-        label_type: LabelType::Tag,
+        label_type: Type::Tag,
         label: "label".to_string(),
         path: "file2.rs".to_string(),
         line_number: 2,
