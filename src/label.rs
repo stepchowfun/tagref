@@ -96,7 +96,7 @@ mod tests {
   }
 
   #[test]
-  fn parse_reference_basic() {
+  fn parse_ref_basic() {
     let path = "file.rs".to_string();
     let contents = r"
       [ref:label1]
@@ -104,13 +104,13 @@ mod tests {
     .trim()
     .to_string();
 
-    let references = parse(Type::Ref, &path, &contents);
+    let refs = parse(Type::Ref, &path, &contents);
 
-    assert_eq!(references.len(), 1);
-    assert_eq!(references[0].label_type, Type::Ref);
-    assert_eq!(references[0].label, "label1");
-    assert_eq!(references[0].path, path);
-    assert_eq!(references[0].line_number, 1);
+    assert_eq!(refs.len(), 1);
+    assert_eq!(refs[0].label_type, Type::Ref);
+    assert_eq!(refs[0].label, "label1");
+    assert_eq!(refs[0].path, path);
+    assert_eq!(refs[0].line_number, 1);
   }
 
   #[test]

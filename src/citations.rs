@@ -4,15 +4,15 @@ use std::collections::HashMap;
 // tag is encountered, an error message is returned.
 pub fn check(
   tags: &HashMap<String, super::label::Label>,
-  references: &[super::label::Label],
+  refs: &[super::label::Label],
 ) -> Option<String> {
   let mut error = String::new();
   let mut missing_tags = false;
 
-  for reference in references {
-    if !tags.contains_key(&reference.label) {
+  for r#ref in refs {
+    if !tags.contains_key(&r#ref.label) {
       missing_tags = true;
-      error.push_str(&format!("No tag found for {}.\n", reference));
+      error.push_str(&format!("No tag found for {}.\n", r#ref));
     }
   }
 
@@ -32,9 +32,9 @@ mod tests {
   #[test]
   fn check_empty() {
     let tags = HashMap::new();
-    let references = vec![];
+    let refs = vec![];
 
-    match check(&tags, &references) {
+    match check(&tags, &refs) {
       None => (),
       Some(error) => {
         panic!(error);
@@ -55,14 +55,14 @@ mod tests {
       },
     );
 
-    let references = vec![Label {
+    let refs = vec![Label {
       label_type: Type::Ref,
       label: "label1".to_string(),
       path: "file1.rs".to_string(),
       line_number: 1,
     }];
 
-    match check(&tags, &references) {
+    match check(&tags, &refs) {
       None => (),
       Some(error) => {
         panic!(error);
@@ -83,7 +83,7 @@ mod tests {
       },
     );
 
-    let references = vec![
+    let refs = vec![
       Label {
         label_type: Type::Ref,
         label: "label1".to_string(),
@@ -98,12 +98,12 @@ mod tests {
       },
     ];
 
-    match check(&tags, &references) {
+    match check(&tags, &refs) {
       None => {
         panic!("The check(...) call should have failed.");
       }
       Some(error) => {
-        assert!(error.contains(&format!("{}", references[1].label)));
+        assert!(error.contains(&format!("{}", refs[1].label)));
       }
     };
   }

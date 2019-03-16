@@ -27,8 +27,8 @@ fn main() {
        references is [ref:?label?]. For more information, visit \
        https://github.com/stepchowfun/tagref. \
        "
-      .replace("?", "")
-      .trim(), // The '?'s are to avoid tag conflicts.
+      .replace("?", "") // The '?'s are to avoid tag conflicts.
+      .trim(),
     )
     .arg(
       clap::Arg::with_name(PATH_OPTION)
@@ -53,67 +53,72 @@ fn main() {
     .get_matches();
 
   // Fetch the command-line arguments.
-  let dir = matches.value_of(PATH_OPTION).unwrap_or(".");
-  let check_references = matches.subcommand_name() == None
-    || matches.subcommand_name() == Some(CHECK_COMMAND);
+  let path = matches.value_of(PATH_OPTION).unwrap_or(".");
 
-  // Parse all the tags into a HashMap. The values are vectors to allow for
-  // duplicates. We will report duplicates later.
-  let mut tags_map = HashMap::new();
-  let _ = walk::walk(dir, |path, contents| {
-    for tag in label::parse(label::Type::Tag, path, contents) {
-      tags_map
-        .entry(tag.label.clone())
-        .or_insert_with(Vec::new)
-        .push(tag.clone());
-    }
-  });
-
-  // Convert tags_map into a set and check for duplicates.
-  match duplicates::check(&tags_map) {
-    Ok(tags) => {
-      // Handle the LIST_TAGS_COMMAND subcommand if necessary.
-      if matches.subcommand_name() == Some(LIST_TAGS_COMMAND) {
-        for tag in tags.values() {
+  // Decide what to do based on the subcommand.
+  match matches.subcommand_name() {
+    Some(LIST_TAGS_COMMAND) => {
+      let _ = walk::walk(path, |file_path, contents| {
+        for tag in label::parse(label::Type::Tag, file_path, contents) {
           println!("{}", tag);
         }
-      }
+      });
+    }
 
-      // Parse all the references.
-      let mut references = Vec::new();
-      let files_scanned = walk::walk(dir, |path, contents| {
-        references.extend(label::parse(label::Type::Ref, path, contents));
+    Some(LIST_REFS_COMMAND) => {
+      let _ = walk::walk(path, |file_path, contents| {
+        for r#ref in label::parse(label::Type::Ref, file_path, contents) {
+          println!("{}", r#ref);
+        }
+      });
+    }
+
+    Some(CHECK_COMMAND) | None => {
+      // Parse all the tags into a HashMap. The values are vectors to allow for
+      // duplicates. We will report duplicates later.
+      let mut tags_map = HashMap::new();
+      let _ = walk::walk(path, |file_path, contents| {
+        for tag in label::parse(label::Type::Tag, file_path, contents) {
+          tags_map
+            .entry(tag.label.clone())
+            .or_insert_with(Vec::new)
+            .push(tag.clone());
+        }
       });
 
-      // Handle the LIST_REFS_COMMAND subcommand if necessary.
-      if matches.subcommand_name() == Some(LIST_REFS_COMMAND) {
-        for reference in &references {
-          println!("{}", reference);
-        }
-      }
+      // Convert tags_map into a set and check for duplicates.
+      match duplicates::check(&tags_map) {
+        Ok(tags) => {
+          // Parse all the references.
+          let mut refs = Vec::new();
+          let files_scanned = walk::walk(path, |file_path, contents| {
+            refs.extend(label::parse(label::Type::Ref, file_path, contents));
+          });
 
-      // Check the references if necessary.
-      if check_references {
-        if let Some(error) = citations::check(&tags, &references) {
+          // Check the references.
+          if let Some(error) = citations::check(&tags, &refs) {
+            eprintln!("{}", error.red());
+            process::exit(1);
+          } else {
+            println!(
+              "{}",
+              format!(
+                "{} and {} validated in {}.",
+                count::count(tags.len(), "tag"),
+                count::count(refs.len(), "reference"),
+                count::count(files_scanned, "file")
+              )
+              .green()
+            );
+          }
+        }
+        Err(error) => {
           eprintln!("{}", error.red());
           process::exit(1);
-        } else {
-          println!(
-            "{}",
-            format!(
-              "{} and {} validated in {}.",
-              count::count(tags.len(), "tag"),
-              count::count(references.len(), "reference"),
-              count::count(files_scanned, "file")
-            )
-            .green()
-          );
         }
-      }
+      };
     }
-    Err(error) => {
-      eprintln!("{}", error.red());
-      process::exit(1);
-    }
-  };
+
+    Some(&_) => panic!(),
+  }
 }
