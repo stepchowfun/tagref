@@ -4,7 +4,7 @@ use std::collections::HashMap;
 // tag is encountered, an error message is returned.
 pub fn check(
   tags: &HashMap<String, super::label::Label>,
-  references: &[super::label::Label]
+  references: &[super::label::Label],
 ) -> Option<String> {
   let mut error = String::new();
   let mut missing_tags = false;
@@ -38,7 +38,7 @@ mod tests {
       None => (),
       Some(error) => {
         panic!(error);
-      },
+      }
     };
   }
 
@@ -52,23 +52,21 @@ mod tests {
         label: "label1".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
-      }
+      },
     );
 
-    let references = vec![
-      Label {
-        label_type: Type::Ref,
-        label: "label1".to_string(),
-        path: "file1.rs".to_string(),
-        line_number: 1,
-      },
-    ];
+    let references = vec![Label {
+      label_type: Type::Ref,
+      label: "label1".to_string(),
+      path: "file1.rs".to_string(),
+      line_number: 1,
+    }];
 
     match check(&tags, &references) {
       None => (),
       Some(error) => {
         panic!(error);
-      },
+      }
     };
   }
 
@@ -82,7 +80,7 @@ mod tests {
         label: "label1".to_string(),
         path: "file1.rs".to_string(),
         line_number: 1,
-      }
+      },
     );
 
     let references = vec![
@@ -103,10 +101,10 @@ mod tests {
     match check(&tags, &references) {
       None => {
         panic!("The check(...) call should have failed.");
-      },
+      }
       Some(error) => {
         assert!(error.contains(&format!("{}", references[1].label)));
-      },
+      }
     };
   }
 }
