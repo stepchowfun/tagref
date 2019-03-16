@@ -20,7 +20,7 @@ pub fn walk<T: FnMut(&str, &str) -> ()>(path: &str, mut callback: T) -> usize {
             files_scanned += 1;
             callback(
               &dir_entry.path().to_string_lossy().into_owned(),
-              &contents
+              &contents,
             );
           }
         }

@@ -1,8 +1,8 @@
 use regex::Regex;
 use std::fmt;
 
-const TAG_REGEX:&str = r"(?i)\[\s*tag\s*:([^\]]*)\]";
-const REFERENCE_REGEX:&str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
+const TAG_REGEX: &str = r"(?i)\[\s*tag\s*:([^\]]*)\]";
+const REFERENCE_REGEX: &str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Type {
@@ -37,12 +37,11 @@ impl fmt::Display for Label {
 
 // This function returns all the labels in a file for a given type.
 pub fn parse(label_type: Type, path: &str, contents: &str) -> Vec<Label> {
-  let regex = Regex::new(
-    match label_type {
-      Type::Tag => TAG_REGEX,
-      Type::Ref => REFERENCE_REGEX,
-    }
-  ).unwrap();
+  let regex = Regex::new(match label_type {
+    Type::Tag => TAG_REGEX,
+    Type::Ref => REFERENCE_REGEX,
+  })
+  .unwrap();
 
   let mut labels: Vec<Label> = Vec::new();
   let mut line_number = 1;
@@ -66,18 +65,14 @@ pub fn parse(label_type: Type, path: &str, contents: &str) -> Vec<Label> {
 
 #[cfg(test)]
 mod tests {
-  use crate::label::{Type, parse};
+  use crate::label::{parse, Type};
 
   #[test]
   fn parse_empty() {
     let path = "file.rs".to_string();
     let contents = String::new();
 
-    let tags = parse(
-      Type::Tag,
-      &path,
-      &contents
-    );
+    let tags = parse(Type::Tag, &path, &contents);
 
     assert!(tags.is_empty());
   }
@@ -87,13 +82,11 @@ mod tests {
     let path = "file.rs".to_string();
     let contents = r"
       [tag:label1]
-    ".trim().to_string();
+    "
+    .trim()
+    .to_string();
 
-    let tags = parse(
-      Type::Tag,
-      &path,
-      &contents
-    );
+    let tags = parse(Type::Tag, &path, &contents);
 
     assert_eq!(tags.len(), 1);
     assert_eq!(tags[0].label_type, Type::Tag);
@@ -107,13 +100,11 @@ mod tests {
     let path = "file.rs".to_string();
     let contents = r"
       [ref:label1]
-    ".trim().to_string();
+    "
+    .trim()
+    .to_string();
 
-    let references = parse(
-      Type::Ref,
-      &path,
-      &contents
-    );
+    let references = parse(Type::Ref, &path, &contents);
 
     assert_eq!(references.len(), 1);
     assert_eq!(references[0].label_type, Type::Ref);
@@ -127,13 +118,11 @@ mod tests {
     let path = "file.rs".to_string();
     let contents = r"
       [ TAG: label2 ]
-    ".trim().to_string();
+    "
+    .trim()
+    .to_string();
 
-    let tags = parse(
-      Type::Tag,
-      &path,
-      &contents
-    );
+    let tags = parse(Type::Tag, &path, &contents);
 
     assert_eq!(tags.len(), 1);
     assert_eq!(tags[0].label_type, Type::Tag);
@@ -147,13 +136,11 @@ mod tests {
     let path = "file.rs".to_string();
     let contents = r"
       [tag:label3] [tag:label4]
-    ".trim().to_string();
+    "
+    .trim()
+    .to_string();
 
-    let tags = parse(
-      Type::Tag,
-      &path,
-      &contents
-    );
+    let tags = parse(Type::Tag, &path, &contents);
 
     assert_eq!(tags.len(), 2);
     assert_eq!(tags[0].label_type, Type::Tag);
@@ -172,13 +159,11 @@ mod tests {
     let contents = r"
       [tag:label5]
       [tag:label6]
-    ".trim().to_string();
+    "
+    .trim()
+    .to_string();
 
-    let tags = parse(
-      Type::Tag,
-      &path,
-      &contents
-    );
+    let tags = parse(Type::Tag, &path, &contents);
 
     assert_eq!(tags.len(), 2);
     assert_eq!(tags[0].label_type, Type::Tag);
