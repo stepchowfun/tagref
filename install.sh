@@ -46,7 +46,7 @@ if ! chmod a+rx "$TEMPFILE"; then
 fi
 
 # Install it at the requested destination.
-sudo mv "$TEMPFILE" "$DESTINATION" < /dev/tty
+mv "$TEMPFILE" "$DESTINATION" 2> /dev/null || sudo mv "$TEMPFILE" "$DESTINATION" < /dev/tty
 
 # Let the user know it worked.
 echo 'Tagref is now installed.'
