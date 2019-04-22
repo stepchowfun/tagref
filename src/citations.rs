@@ -5,7 +5,7 @@ use std::collections::HashMap;
 pub fn check(
   tags: &HashMap<String, super::label::Label>,
   refs: &[super::label::Label],
-) -> Option<String> {
+) -> Result<(), String> {
   let mut error = String::new();
   let mut missing_tags = false;
 
@@ -17,9 +17,9 @@ pub fn check(
   }
 
   if missing_tags {
-    Some(error.trim().to_string())
+    Err(error.trim().to_string())
   } else {
-    None
+    Ok(())
   }
 }
 
@@ -34,11 +34,8 @@ mod tests {
     let tags = HashMap::new();
     let refs = vec![];
 
-    match check(&tags, &refs) {
-      None => (),
-      Some(error) => {
-        panic!(error);
-      }
+    if let Err(error) = check(&tags, &refs) {
+      panic!(error);
     };
   }
 
@@ -62,11 +59,8 @@ mod tests {
       line_number: 1,
     }];
 
-    match check(&tags, &refs) {
-      None => (),
-      Some(error) => {
-        panic!(error);
-      }
+    if let Err(error) = check(&tags, &refs) {
+      panic!(error);
     };
   }
 
@@ -99,10 +93,10 @@ mod tests {
     ];
 
     match check(&tags, &refs) {
-      None => {
+      Ok(()) => {
         panic!("The check(...) call should have failed.");
       }
-      Some(error) => {
+      Err(error) => {
         assert!(error.contains(&format!("{}", refs[1].label)));
       }
     };

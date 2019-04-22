@@ -96,20 +96,23 @@ fn main() {
           });
 
           // Check the references.
-          if let Some(error) = citations::check(&tags, &refs) {
-            eprintln!("{}", error.red());
-            process::exit(1);
-          } else {
-            println!(
-              "{}",
-              format!(
-                "{} and {} validated in {}.",
-                count::count(tags.len(), "tag"),
-                count::count(refs.len(), "reference"),
-                count::count(files_scanned, "file")
-              )
-              .green()
-            );
+          match citations::check(&tags, &refs) {
+            Ok(()) => {
+              println!(
+                "{}",
+                format!(
+                  "{} and {} validated in {}.",
+                  count::count(tags.len(), "tag"),
+                  count::count(refs.len(), "reference"),
+                  count::count(files_scanned, "file")
+                )
+                .green()
+              );
+            }
+            Err(error) => {
+              eprintln!("{}", error.red());
+              process::exit(1);
+            }
           }
         }
         Err(error) => {
