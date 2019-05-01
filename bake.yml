@@ -1,0 +1,53 @@
+image: ubuntu:18.04
+tasks:
+  packages: |
+    apt-get --yes update
+    apt-get --yes install build-essential curl
+
+  tagref:
+    dependencies:
+      - packages
+    command: |
+      curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | sh
+
+  user: useradd --user-group --create-home user
+
+  rust:
+    dependencies:
+      - packages
+      - user
+    user: user
+    command: |
+      curl https://sh.rustup.rs -sSf | sh -s -- -y
+      . $HOME/.cargo/env
+      rustup component add clippy
+      rustup component add rustfmt
+      rm -rf "$(dirname "$(rustup which rustc)")/../share"
+
+  build:
+    dependencies:
+      - rust
+    paths:
+      - Cargo.lock
+      - Cargo.toml
+      - src
+    user: user
+    command: cargo build
+
+  test:
+    dependencies:
+      - build
+    user: user
+    command: cargo test
+
+  lint:
+    dependencies:
+      - build
+      - tagref
+    paths:
+      - rustfmt.toml
+    user: user
+    command: |
+      cargo fmt --all -- --check
+      cargo clippy -- --deny clippy::pedantic
+      tagref
