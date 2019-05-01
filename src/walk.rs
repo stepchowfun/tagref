@@ -1,11 +1,13 @@
 use ignore::Walk;
-use std::fs::File;
-use std::io::prelude::Read;
+use std::{fs::File, io::prelude::Read, path::Path};
 
 // This function visits each file in the given directory and calls the given
 // callback with the path and the contents of the file. The number of files
 // scanned is returned.
-pub fn walk<T: FnMut(&str, &str) -> ()>(path: &str, mut callback: T) -> usize {
+pub fn walk<T: FnMut(&Path, &str) -> ()>(
+  path: &Path,
+  mut callback: T,
+) -> usize {
   let mut files_scanned: usize = 0;
 
   for result in Walk::new(path) {
@@ -18,10 +20,7 @@ pub fn walk<T: FnMut(&str, &str) -> ()>(path: &str, mut callback: T) -> usize {
           let mut contents = String::new();
           if file.read_to_string(&mut contents).is_ok() {
             files_scanned += 1;
-            callback(
-              &dir_entry.path().to_string_lossy().into_owned(),
-              &contents,
-            );
+            callback(dir_entry.path(), &contents);
           }
         }
       }

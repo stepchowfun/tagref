@@ -27,7 +27,7 @@ pub fn check(
   }
 
   if dupes_found {
-    Err(error.trim().to_string())
+    Err(error.trim().to_owned())
   } else {
     Ok(unique_tags)
   }
@@ -35,9 +35,11 @@ pub fn check(
 
 #[cfg(test)]
 mod tests {
-  use crate::duplicates::check;
-  use crate::label::{Label, Type};
-  use std::collections::HashMap;
+  use crate::{
+    duplicates::check,
+    label::{Label, Type},
+  };
+  use std::{collections::HashMap, path::Path};
 
   #[test]
   fn check_empty() {
@@ -58,20 +60,20 @@ mod tests {
 
     let tags_vec1 = vec![Label {
       label_type: Type::Tag,
-      label: "label1".to_string(),
-      path: "file1.rs".to_string(),
+      label: "label1".to_owned(),
+      path: Path::new("file1.rs").to_owned(),
       line_number: 1,
     }];
 
     let tags_vec2 = vec![Label {
       label_type: Type::Tag,
-      label: "label2".to_string(),
-      path: "file2.rs".to_string(),
+      label: "label2".to_owned(),
+      path: Path::new("file2.rs").to_owned(),
       line_number: 2,
     }];
 
-    tags_map.insert("label1".to_string(), tags_vec1);
-    tags_map.insert("label2".to_string(), tags_vec2);
+    tags_map.insert("label1".to_owned(), tags_vec1);
+    tags_map.insert("label2".to_owned(), tags_vec2);
 
     match check(&tags_map) {
       Ok(tags) => {
@@ -90,19 +92,19 @@ mod tests {
     let tags_vec = vec![
       Label {
         label_type: Type::Tag,
-        label: "label".to_string(),
-        path: "file1.rs".to_string(),
+        label: "label".to_owned(),
+        path: Path::new("file1.rs").to_owned(),
         line_number: 1,
       },
       Label {
         label_type: Type::Tag,
-        label: "label".to_string(),
-        path: "file2.rs".to_string(),
+        label: "label".to_owned(),
+        path: Path::new("file2.rs").to_owned(),
         line_number: 2,
       },
     ];
 
-    tags_map.insert("label".to_string(), tags_vec.clone());
+    tags_map.insert("label".to_owned(), tags_vec.clone());
 
     match check(&tags_map) {
       Ok(_) => {

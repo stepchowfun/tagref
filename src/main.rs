@@ -5,8 +5,7 @@ mod label;
 mod walk;
 
 use colored::Colorize;
-use std::collections::HashMap;
-use std::process;
+use std::{collections::HashMap, path::Path, process};
 
 const PATH_OPTION: &str = "path";
 const CHECK_COMMAND: &str = "check";
@@ -53,12 +52,13 @@ fn main() {
     .get_matches();
 
   // Fetch the command-line arguments.
-  let path = matches.value_of(PATH_OPTION).unwrap_or(".");
+  let path =
+    Path::new(&matches.value_of(PATH_OPTION).unwrap_or(".")).to_owned();
 
   // Decide what to do based on the subcommand.
   match matches.subcommand_name() {
     Some(LIST_TAGS_COMMAND) => {
-      let _ = walk::walk(path, |file_path, contents| {
+      let _ = walk::walk(&path, |file_path, contents| {
         for tag in label::parse(label::Type::Tag, file_path, contents) {
           println!("{}", tag);
         }
@@ -66,7 +66,7 @@ fn main() {
     }
 
     Some(LIST_REFS_COMMAND) => {
-      let _ = walk::walk(path, |file_path, contents| {
+      let _ = walk::walk(&path, |file_path, contents| {
         for r#ref in label::parse(label::Type::Ref, file_path, contents) {
           println!("{}", r#ref);
         }
@@ -77,7 +77,7 @@ fn main() {
       // Parse all the tags into a HashMap. The values are vectors to allow for
       // duplicates. We will report duplicates later.
       let mut tags_map = HashMap::new();
-      let _ = walk::walk(path, |file_path, contents| {
+      let _ = walk::walk(&path, |file_path, contents| {
         for tag in label::parse(label::Type::Tag, file_path, contents) {
           tags_map
             .entry(tag.label.clone())
@@ -91,7 +91,7 @@ fn main() {
         Ok(tags) => {
           // Parse all the references.
           let mut refs = Vec::new();
-          let files_scanned = walk::walk(path, |file_path, contents| {
+          let files_scanned = walk::walk(&path, |file_path, contents| {
             refs.extend(label::parse(label::Type::Ref, file_path, contents));
           });
 
