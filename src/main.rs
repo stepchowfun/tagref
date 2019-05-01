@@ -16,7 +16,7 @@ const LIST_REFS_COMMAND: &str = "list-refs";
 fn main() {
   // Set up the command-line interface.
   let matches = clap::App::new("Tagref")
-    .version("0.0.7")
+    .version("0.0.8")
     .author("Stephan Boyer <stephan@stephanboyer.com>")
     .about(
       " \
