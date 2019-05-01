@@ -71,14 +71,12 @@ The easiest way to use Tagref is to run the `tagref` command with no arguments. 
 
 ```
 USAGE:
-    tagref [OPTIONS] [SUBCOMMAND]
-
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+    tagref [SUBCOMMAND]
 
 OPTIONS:
+    -h, --help           Prints help information
     -p, --path <PATH>    Sets the path of the directory to scan
+    -v, --version        Prints version information
 
 SUBCOMMANDS:
     check        Check all the tags and references (default)
