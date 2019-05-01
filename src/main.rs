@@ -4,6 +4,7 @@ mod duplicates;
 mod label;
 mod walk;
 
+use clap::{App, AppSettings, Arg, SubCommand};
 use colored::Colorize;
 use std::{collections::HashMap, path::Path, process};
 
@@ -15,8 +16,9 @@ const LIST_REFS_COMMAND: &str = "list-refs";
 // Welcome to Tagref! The fun starts here.
 fn main() {
   // Set up the command-line interface.
-  let matches = clap::App::new("Tagref")
+  let matches = App::new("Tagref")
     .version("0.0.8")
+    .version_short("v")
     .author("Stephan Boyer <stephan@stephanboyer.com>")
     .about(
       " \
@@ -29,8 +31,10 @@ fn main() {
       .replace("?", "") // The '?'s are to avoid tag conflicts.
       .trim(),
     )
+    .setting(AppSettings::ColoredHelp)
+    .setting(AppSettings::UnifiedHelpMessage)
     .arg(
-      clap::Arg::with_name(PATH_OPTION)
+      Arg::with_name(PATH_OPTION)
         .short("p")
         .long(PATH_OPTION)
         .value_name("PATH")
@@ -38,15 +42,14 @@ fn main() {
         .takes_value(true),
     )
     .subcommand(
-      clap::SubCommand::with_name(CHECK_COMMAND)
+      SubCommand::with_name(CHECK_COMMAND)
         .about("Check all the tags and references (default)"),
     )
     .subcommand(
-      clap::SubCommand::with_name(LIST_TAGS_COMMAND)
-        .about("List all the tags"),
+      SubCommand::with_name(LIST_TAGS_COMMAND).about("List all the tags"),
     )
     .subcommand(
-      clap::SubCommand::with_name(LIST_REFS_COMMAND)
+      SubCommand::with_name(LIST_REFS_COMMAND)
         .about("List all the references"),
     )
     .get_matches();
