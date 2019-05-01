@@ -36,7 +36,7 @@ If you are running macOS or a GNU-based Linux on an x86-64 CPU, you can install 
 curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | sh
 ```
 
-The same command can be used to update Tagref to the latest version.
+The same command can be used again to update Tagref to the latest version.
 
 ### Custom installation
 

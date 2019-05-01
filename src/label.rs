@@ -1,5 +1,8 @@
 use regex::Regex;
-use std::fmt;
+use std::{
+  fmt,
+  path::{Path, PathBuf},
+};
 
 const TAG_REGEX: &str = r"(?i)\[\s*tag\s*:([^\]]*)\]";
 const REFERENCE_REGEX: &str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
@@ -14,7 +17,7 @@ pub enum Type {
 pub struct Label {
   pub label_type: Type,
   pub label: String,
-  pub path: String,
+  pub path: PathBuf,
   pub line_number: i64,
 }
 
@@ -29,14 +32,14 @@ impl fmt::Display for Label {
         Type::Ref => "ref",
       },
       self.label,
-      self.path,
+      self.path.to_string_lossy(),
       self.line_number
     )
   }
 }
 
 // This function returns all the labels in a file for a given type.
-pub fn parse(label_type: Type, path: &str, contents: &str) -> Vec<Label> {
+pub fn parse(label_type: Type, path: &Path, contents: &str) -> Vec<Label> {
   let regex = Regex::new(match label_type {
     Type::Tag => TAG_REGEX,
     Type::Ref => REFERENCE_REGEX,
@@ -52,8 +55,8 @@ pub fn parse(label_type: Type, path: &str, contents: &str) -> Vec<Label> {
       // Some. Hence we are justified in unwrapping.
       labels.push(Label {
         label_type,
-        label: captures.get(1).unwrap().as_str().trim().to_string(),
-        path: path.to_string(),
+        label: captures.get(1).unwrap().as_str().trim().to_owned(),
+        path: path.to_owned(),
         line_number,
       });
     }
@@ -66,10 +69,11 @@ pub fn parse(label_type: Type, path: &str, contents: &str) -> Vec<Label> {
 #[cfg(test)]
 mod tests {
   use crate::label::{parse, Type};
+  use std::path::Path;
 
   #[test]
   fn parse_empty() {
-    let path = "file.rs".to_string();
+    let path = Path::new("file.rs").to_owned();
     let contents = String::new();
 
     let tags = parse(Type::Tag, &path, &contents);
@@ -79,12 +83,12 @@ mod tests {
 
   #[test]
   fn parse_tag_basic() {
-    let path = "file.rs".to_string();
+    let path = Path::new("file.rs").to_owned();
     let contents = r"
       [tag:label1]
     "
     .trim()
-    .to_string();
+    .to_owned();
 
     let tags = parse(Type::Tag, &path, &contents);
 
@@ -97,12 +101,12 @@ mod tests {
 
   #[test]
   fn parse_ref_basic() {
-    let path = "file.rs".to_string();
+    let path = Path::new("file.rs").to_owned();
     let contents = r"
       [ref:label1]
     "
     .trim()
-    .to_string();
+    .to_owned();
 
     let refs = parse(Type::Ref, &path, &contents);
 
@@ -115,12 +119,12 @@ mod tests {
 
   #[test]
   fn parse_whitespace() {
-    let path = "file.rs".to_string();
+    let path = Path::new("file.rs").to_owned();
     let contents = r"
       [ TAG: label2 ]
     "
     .trim()
-    .to_string();
+    .to_owned();
 
     let tags = parse(Type::Tag, &path, &contents);
 
@@ -133,12 +137,12 @@ mod tests {
 
   #[test]
   fn parse_multiple_per_line() {
-    let path = "file.rs".to_string();
+    let path = Path::new("file.rs").to_owned();
     let contents = r"
       [tag:label3] [tag:label4]
     "
     .trim()
-    .to_string();
+    .to_owned();
 
     let tags = parse(Type::Tag, &path, &contents);
 
@@ -155,13 +159,13 @@ mod tests {
 
   #[test]
   fn parse_multiple_lines() {
-    let path = "file.rs".to_string();
+    let path = Path::new("file.rs").to_owned();
     let contents = r"
       [tag:label5]
       [tag:label6]
     "
     .trim()
-    .to_string();
+    .to_owned();
 
     let tags = parse(Type::Tag, &path, &contents);
 
