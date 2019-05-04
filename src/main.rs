@@ -4,20 +4,29 @@ mod duplicates;
 mod label;
 mod walk;
 
+use atty::Stream;
 use clap::{App, AppSettings, Arg, SubCommand};
 use colored::Colorize;
-use std::{collections::HashMap, path::Path, process};
+use std::{collections::HashMap, path::Path, process::exit};
 
-const PATH_OPTION: &str = "path";
+// The program version
+const VERSION: &str = "0.0.8";
+
+// Command-line option and subcommand names
 const CHECK_COMMAND: &str = "check";
-const LIST_TAGS_COMMAND: &str = "list-tags";
 const LIST_REFS_COMMAND: &str = "list-refs";
+const LIST_TAGS_COMMAND: &str = "list-tags";
+const LIST_UNUSED_COMMAND: &str = "list-unused";
+const PATH_OPTION: &str = "path";
 
-// Welcome to Tagref! The fun starts here.
-fn main() {
+// Program entrypoint
+fn entry() -> Result<(), String> {
+  // Determine whether to print colored output.
+  colored::control::set_override(atty::is(Stream::Stdout));
+
   // Set up the command-line interface.
   let matches = App::new("Tagref")
-    .version("0.0.8")
+    .version(VERSION)
     .version_short("v")
     .author("Stephan Boyer <stephan@stephanboyer.com>")
     .about(
@@ -49,6 +58,10 @@ fn main() {
       SubCommand::with_name(LIST_TAGS_COMMAND).about("List all the tags"),
     )
     .subcommand(
+      SubCommand::with_name(LIST_UNUSED_COMMAND)
+        .about("List the unreferenced tags"),
+    )
+    .subcommand(
       SubCommand::with_name(LIST_REFS_COMMAND)
         .about("List all the references"),
     )
@@ -61,6 +74,7 @@ fn main() {
   // Decide what to do based on the subcommand.
   match matches.subcommand_name() {
     Some(LIST_TAGS_COMMAND) => {
+      // Parse and print all the tags.
       let _ = walk::walk(&path, |file_path, contents| {
         for tag in label::parse(label::Type::Tag, file_path, contents) {
           println!("{}", tag);
@@ -69,6 +83,7 @@ fn main() {
     }
 
     Some(LIST_REFS_COMMAND) => {
+      // Parse and print all the references.
       let _ = walk::walk(&path, |file_path, contents| {
         for r#ref in label::parse(label::Type::Ref, file_path, contents) {
           println!("{}", r#ref);
@@ -76,9 +91,37 @@ fn main() {
       });
     }
 
+    Some(LIST_UNUSED_COMMAND) => {
+      // Parse all the tags into a `HashMap`. The values are `Vec`s to allow
+      // for duplicates.
+      let mut tags_map = HashMap::new();
+      let _ = walk::walk(&path, |file_path, contents| {
+        for tag in label::parse(label::Type::Tag, file_path, contents) {
+          tags_map
+            .entry(tag.label.clone())
+            .or_insert_with(Vec::new)
+            .push(tag.clone());
+        }
+      });
+
+      // Remove all the referenced tags.
+      let _ = walk::walk(&path, |file_path, contents| {
+        for r#ref in label::parse(label::Type::Ref, file_path, contents) {
+          tags_map.remove(&r#ref.label);
+        }
+      });
+
+      // Print the remaining tags.
+      for tags in tags_map.values() {
+        for tag in tags {
+          println!("{}", tag);
+        }
+      }
+    }
+
     Some(CHECK_COMMAND) | None => {
-      // Parse all the tags into a HashMap. The values are vectors to allow for
-      // duplicates. We will report duplicates later.
+      // Parse all the tags into a `HashMap`. The values are `Vec`s to allow
+      // for duplicates. We'll report duplicates later.
       let mut tags_map = HashMap::new();
       let _ = walk::walk(&path, |file_path, contents| {
         for tag in label::parse(label::Type::Tag, file_path, contents) {
@@ -90,41 +133,40 @@ fn main() {
       });
 
       // Convert tags_map into a set and check for duplicates.
-      match duplicates::check(&tags_map) {
-        Ok(tags) => {
-          // Parse all the references.
-          let mut refs = Vec::new();
-          let files_scanned = walk::walk(&path, |file_path, contents| {
-            refs.extend(label::parse(label::Type::Ref, file_path, contents));
-          });
+      let tags = duplicates::check(&tags_map)?;
 
-          // Check the references.
-          match citations::check(&tags, &refs) {
-            Ok(()) => {
-              println!(
-                "{}",
-                format!(
-                  "{} and {} validated in {}.",
-                  count::count(tags.len(), "tag"),
-                  count::count(refs.len(), "reference"),
-                  count::count(files_scanned, "file")
-                )
-                .green()
-              );
-            }
-            Err(error) => {
-              eprintln!("{}", error.red());
-              process::exit(1);
-            }
-          }
-        }
-        Err(error) => {
-          eprintln!("{}", error.red());
-          process::exit(1);
-        }
-      };
+      // Parse all the references.
+      let mut refs = Vec::new();
+      let files_scanned = walk::walk(&path, |file_path, contents| {
+        refs.extend(label::parse(label::Type::Ref, file_path, contents));
+      });
+
+      // Check the references.
+      citations::check(&tags, &refs)?;
+      println!(
+        "{}",
+        format!(
+          "{} and {} validated in {}.",
+          count::count(tags.len(), "tag"),
+          count::count(refs.len(), "reference"),
+          count::count(files_scanned, "file")
+        )
+        .green()
+      );
     }
 
     Some(&_) => panic!(),
+  }
+
+  // Everything succeeded.
+  Ok(())
+}
+
+// Let the fun begin!
+fn main() {
+  // Jump to the entrypoint and handle any resulting errors.
+  if let Err(e) = entry() {
+    eprintln!("{}", e.red());
+    exit(1);
   }
 }

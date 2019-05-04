@@ -12,8 +12,9 @@ pub fn walk<T: FnMut(&Path, &str) -> ()>(
 
   for result in Walk::new(path) {
     if let Ok(dir_entry) = result {
-      // Here, file_type() should always return a Some. It could only return
-      // None if the file represents STDIN, and that isn't the case here.
+      // Here, `file_type()` should always return a `Some`. It could only
+      // return `None` if the file represents STDIN, and that isn't the case
+      // here.
       if dir_entry.file_type().unwrap().is_file() {
         let possible_file = File::open(dir_entry.path());
         if let Ok(mut file) = possible_file {

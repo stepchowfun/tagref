@@ -11,6 +11,7 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
+atty = "0.2"
 colored = "1"
 ignore = "0.4"
 regex = "1"

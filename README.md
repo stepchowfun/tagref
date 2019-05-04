@@ -79,10 +79,11 @@ OPTIONS:
     -v, --version        Prints version information
 
 SUBCOMMANDS:
-    check        Check all the tags and references (default)
-    help         Prints this message or the help of the given subcommand(s)
-    list-refs    List all the references
-    list-tags    List all the tags
+    check          Check all the tags and references (default)
+    help           Prints this message or the help of the given subcommand(s)
+    list-refs      List all the references
+    list-tags      List all the tags
+    list-unused    List the unreferenced tags
 ```
 
 ## Acknowledgements
