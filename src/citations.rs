@@ -1,10 +1,11 @@
+use crate::label::Label;
 use std::collections::HashMap;
 
 // This function checks that references actually point to tags. If a missing
 // tag is encountered, an error message is returned.
 pub fn check(
-  tags: &HashMap<String, super::label::Label>,
-  refs: &[super::label::Label],
+  tags: &HashMap<String, Label>,
+  refs: &[Label],
 ) -> Result<(), String> {
   let mut error = String::new();
   let mut missing_tags = false;

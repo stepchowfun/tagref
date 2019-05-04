@@ -1,11 +1,11 @@
+use crate::label::Label;
 use std::collections::HashMap;
 
-// This function checks that all the vectors in tags_map have a single element.
-// If that condition holds, a map from label to tag is returned. Otherwise, an
-// error message is returned instead.
+// This function checks that all the vectors in `tags_map` have a single
+// element. It returns a map from label to tag.
 pub fn check(
-  tags_map: &HashMap<String, Vec<super::label::Label>>,
-) -> Result<HashMap<String, super::label::Label>, String> {
+  tags_map: &HashMap<String, Vec<Label>>,
+) -> Result<HashMap<String, Label>, String> {
   let mut unique_tags = HashMap::new();
   let mut error = String::new();
   let mut dupes_found = false;
