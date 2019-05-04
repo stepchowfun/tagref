@@ -1,6 +1,7 @@
 use regex::Regex;
 use std::{
   fmt,
+  io::BufRead,
   path::{Path, PathBuf},
 };
 
@@ -18,7 +19,7 @@ pub struct Label {
   pub label_type: Type,
   pub label: String,
   pub path: PathBuf,
-  pub line_number: i64,
+  pub line_number: usize,
 }
 
 // Sometimes we need to be able to print a label.
@@ -39,7 +40,11 @@ impl fmt::Display for Label {
 }
 
 // This function returns all the labels in a file for a given type.
-pub fn parse(label_type: Type, path: &Path, contents: &str) -> Vec<Label> {
+pub fn parse<R: BufRead>(
+  label_type: Type,
+  path: &Path,
+  reader: R,
+) -> Vec<Label> {
   let regex = Regex::new(match label_type {
     Type::Tag => TAG_REGEX,
     Type::Ref => REFERENCE_REGEX,
@@ -47,20 +52,19 @@ pub fn parse(label_type: Type, path: &Path, contents: &str) -> Vec<Label> {
   .unwrap();
 
   let mut labels: Vec<Label> = Vec::new();
-  let mut line_number = 1;
-
-  for line in contents.lines() {
-    for captures in regex.captures_iter(line) {
-      // If we got a match, then `captures.get(1)` is guaranteed to return a
-      // `Some`. Hence we are justified in unwrapping.
-      labels.push(Label {
-        label_type,
-        label: captures.get(1).unwrap().as_str().trim().to_owned(),
-        path: path.to_owned(),
-        line_number,
-      });
+  for (line_number, line_result) in reader.lines().enumerate() {
+    if let Ok(line) = line_result {
+      for captures in regex.captures_iter(&line) {
+        // If we got a match, then `captures.get(1)` is guaranteed to return a
+        // `Some`. Hence we are justified in unwrapping.
+        labels.push(Label {
+          label_type,
+          label: captures.get(1).unwrap().as_str().trim().to_owned(),
+          path: path.to_owned(),
+          line_number: line_number + 1,
+        });
+      }
     }
-    line_number += 1;
   }
 
   labels
@@ -74,9 +78,9 @@ mod tests {
   #[test]
   fn parse_empty() {
     let path = Path::new("file.rs").to_owned();
-    let contents = String::new();
+    let contents = "".as_bytes();
 
-    let tags = parse(Type::Tag, &path, &contents);
+    let tags = parse(Type::Tag, &path, contents);
 
     assert!(tags.is_empty());
   }
@@ -88,9 +92,9 @@ mod tests {
       [tag:label1]
     "
     .trim()
-    .to_owned();
+    .as_bytes();
 
-    let tags = parse(Type::Tag, &path, &contents);
+    let tags = parse(Type::Tag, &path, contents);
 
     assert_eq!(tags.len(), 1);
     assert_eq!(tags[0].label_type, Type::Tag);
@@ -106,9 +110,9 @@ mod tests {
       [ref:label1]
     "
     .trim()
-    .to_owned();
+    .as_bytes();
 
-    let refs = parse(Type::Ref, &path, &contents);
+    let refs = parse(Type::Ref, &path, contents);
 
     assert_eq!(refs.len(), 1);
     assert_eq!(refs[0].label_type, Type::Ref);
@@ -124,9 +128,9 @@ mod tests {
       [ TAG: label2 ]
     "
     .trim()
-    .to_owned();
+    .as_bytes();
 
-    let tags = parse(Type::Tag, &path, &contents);
+    let tags = parse(Type::Tag, &path, contents);
 
     assert_eq!(tags.len(), 1);
     assert_eq!(tags[0].label_type, Type::Tag);
@@ -142,9 +146,9 @@ mod tests {
       [tag:label3] [tag:label4]
     "
     .trim()
-    .to_owned();
+    .as_bytes();
 
-    let tags = parse(Type::Tag, &path, &contents);
+    let tags = parse(Type::Tag, &path, contents);
 
     assert_eq!(tags.len(), 2);
     assert_eq!(tags[0].label_type, Type::Tag);
@@ -165,9 +169,9 @@ mod tests {
       [tag:label6]
     "
     .trim()
-    .to_owned();
+    .as_bytes();
 
-    let tags = parse(Type::Tag, &path, &contents);
+    let tags = parse(Type::Tag, &path, contents);
 
     assert_eq!(tags.len(), 2);
     assert_eq!(tags[0].label_type, Type::Tag);

@@ -7,7 +7,7 @@ mod walk;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, SubCommand};
 use colored::Colorize;
-use std::{collections::HashMap, path::Path, process::exit};
+use std::{collections::HashMap, io::BufReader, path::Path, process::exit};
 
 // The program version
 const VERSION: &str = "0.0.8";
@@ -75,8 +75,10 @@ fn entry() -> Result<(), String> {
   match matches.subcommand_name() {
     Some(LIST_TAGS_COMMAND) => {
       // Parse and print all the tags.
-      let _ = walk::walk(&path, |file_path, contents| {
-        for tag in label::parse(label::Type::Tag, file_path, contents) {
+      let _ = walk::walk(&path, |file_path, file| {
+        for tag in
+          label::parse(label::Type::Tag, file_path, BufReader::new(file))
+        {
           println!("{}", tag);
         }
       });
@@ -84,8 +86,10 @@ fn entry() -> Result<(), String> {
 
     Some(LIST_REFS_COMMAND) => {
       // Parse and print all the references.
-      let _ = walk::walk(&path, |file_path, contents| {
-        for r#ref in label::parse(label::Type::Ref, file_path, contents) {
+      let _ = walk::walk(&path, |file_path, file| {
+        for r#ref in
+          label::parse(label::Type::Ref, file_path, BufReader::new(file))
+        {
           println!("{}", r#ref);
         }
       });
@@ -95,8 +99,10 @@ fn entry() -> Result<(), String> {
       // Parse all the tags into a `HashMap`. The values are `Vec`s to allow
       // for duplicates.
       let mut tags_map = HashMap::new();
-      let _ = walk::walk(&path, |file_path, contents| {
-        for tag in label::parse(label::Type::Tag, file_path, contents) {
+      let _ = walk::walk(&path, |file_path, file| {
+        for tag in
+          label::parse(label::Type::Tag, file_path, BufReader::new(file))
+        {
           tags_map
             .entry(tag.label.clone())
             .or_insert_with(Vec::new)
@@ -105,8 +111,10 @@ fn entry() -> Result<(), String> {
       });
 
       // Remove all the referenced tags.
-      let _ = walk::walk(&path, |file_path, contents| {
-        for r#ref in label::parse(label::Type::Ref, file_path, contents) {
+      let _ = walk::walk(&path, |file_path, file| {
+        for r#ref in
+          label::parse(label::Type::Ref, file_path, BufReader::new(file))
+        {
           tags_map.remove(&r#ref.label);
         }
       });
@@ -123,8 +131,10 @@ fn entry() -> Result<(), String> {
       // Parse all the tags into a `HashMap`. The values are `Vec`s to allow
       // for duplicates. We'll report duplicates later.
       let mut tags_map = HashMap::new();
-      let _ = walk::walk(&path, |file_path, contents| {
-        for tag in label::parse(label::Type::Tag, file_path, contents) {
+      let _ = walk::walk(&path, |file_path, file| {
+        for tag in
+          label::parse(label::Type::Tag, file_path, BufReader::new(file))
+        {
           tags_map
             .entry(tag.label.clone())
             .or_insert_with(Vec::new)
@@ -137,8 +147,12 @@ fn entry() -> Result<(), String> {
 
       // Parse all the references.
       let mut refs = Vec::new();
-      let files_scanned = walk::walk(&path, |file_path, contents| {
-        refs.extend(label::parse(label::Type::Ref, file_path, contents));
+      let files_scanned = walk::walk(&path, |file_path, file| {
+        refs.extend(label::parse(
+          label::Type::Ref,
+          file_path,
+          BufReader::new(file),
+        ));
       });
 
       // Check the references.
