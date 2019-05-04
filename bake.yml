@@ -1,16 +1,19 @@
 image: ubuntu:18.04
 tasks:
-  packages: |
-    apt-get --yes update
-    apt-get --yes install build-essential curl
+  packages:
+    command: |
+      apt-get update
+      apt-get install --yes build-essential curl
 
   tagref:
     dependencies:
       - packages
     command: |
-      curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | sh
+      set -o pipefail
+      curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | VERSION=0.0.8 sh
 
-  user: useradd --user-group --create-home user
+  user:
+    command: adduser --disabled-password --gecos '' user
 
   rust:
     dependencies:
@@ -18,36 +21,46 @@ tasks:
       - user
     user: user
     command: |
-      curl https://sh.rustup.rs -sSf | sh -s -- -y
+      set -o pipefail
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable-2019-04-25-x86_64-unknown-linux-gnu
       . $HOME/.cargo/env
       rustup component add clippy
       rustup component add rustfmt
       rm -rf "$(dirname "$(rustup which rustc)")/../share"
 
-  build:
+  tools:
     dependencies:
       - rust
+      - tagref
+
+  build:
+    dependencies:
+      - tools
     paths:
       - Cargo.lock
       - Cargo.toml
       - src
     user: user
-    command: cargo build
+    command: |
+      . $HOME/.cargo/env
+      cargo build
 
   test:
     dependencies:
-      - build
+      - tools
     user: user
-    command: cargo test
+    command: |
+      . $HOME/.cargo/env
+      cargo test
 
   lint:
     dependencies:
-      - build
-      - tagref
+      - tools
     paths:
       - rustfmt.toml
     user: user
     command: |
+      . $HOME/.cargo/env
       cargo fmt --all -- --check
       cargo clippy -- --deny clippy::pedantic
       tagref
