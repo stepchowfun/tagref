@@ -88,4 +88,4 @@ SUBCOMMANDS:
 
 ## Acknowledgements
 
-The idea for Tagref was inspired by [the GHC notes convention](https://ghc.haskell.org/trac/ghc/wiki/Commentary/CodingStyle#Commentsinthesourcecode). GHC is one of the most maintainable codebases for its size. [This article](http://www.aosabook.org/en/ghc.html) has more insights into how the GHC developers manage that codebase.
+The idea for Tagref was inspired by [the GHC notes convention](https://ghc.haskell.org/trac/ghc/wiki/Commentary/CodingStyle#Commentsinthesourcecode). [This article](http://www.aosabook.org/en/ghc.html) has more insights into how the GHC developers manage their codebase.
