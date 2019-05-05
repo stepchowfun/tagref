@@ -15,6 +15,9 @@ use std::{
   sync::{Arc, Mutex},
 };
 
+#[macro_use]
+extern crate lazy_static;
+
 // The program version
 const VERSION: &str = "0.0.8";
 
