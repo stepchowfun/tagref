@@ -19,7 +19,7 @@ use std::{
 extern crate lazy_static;
 
 // The program version
-const VERSION: &str = "0.0.8";
+const VERSION: &str = "0.1.0";
 
 // Command-line option and subcommand names
 const CHECK_COMMAND: &str = "check";

@@ -1,6 +1,6 @@
 [package]
 name = "tagref"
-version = "0.0.8"
+version = "0.1.0"
 authors = ["Stephan Boyer <stephan@stephanboyer.com>"]
 description = "Tagref helps you refer to other locations in your codebase."
 license = "MIT"
