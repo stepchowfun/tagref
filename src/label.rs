@@ -6,7 +6,7 @@ use std::{
 };
 
 const TAG_REGEX: &str = r"(?i)\[\s*tag\s*:([^\]]*)\]";
-const REFERENCE_REGEX: &str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
+const REF_REGEX: &str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Type {
@@ -45,11 +45,16 @@ pub fn parse<R: BufRead>(
   path: &Path,
   reader: R,
 ) -> Vec<Label> {
-  let regex = Regex::new(match label_type {
-    Type::Tag => TAG_REGEX,
-    Type::Ref => REFERENCE_REGEX,
-  })
-  .unwrap();
+  lazy_static! {
+    // These `unwrap`s are safe because we manually inspected the regex.
+    static ref TAG_REGEX_COMPILED: Regex = Regex::new(TAG_REGEX).unwrap();
+    static ref REF_REGEX_COMPILED: Regex = Regex::new(REF_REGEX).unwrap();
+  }
+
+  let regex = match label_type {
+    Type::Tag => &TAG_REGEX_COMPILED as &Regex,
+    Type::Ref => &REF_REGEX_COMPILED as &Regex,
+  };
 
   let mut labels: Vec<Label> = Vec::new();
   for (line_number, line_result) in reader.lines().enumerate() {
