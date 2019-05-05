@@ -10,7 +10,7 @@ tasks:
       - packages
     command: |
       set -o pipefail
-      curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | VERSION=0.0.8 sh
+      curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | VERSION=0.1.0 sh
 
   user:
     command: adduser --disabled-password --gecos '' user
@@ -57,10 +57,19 @@ tasks:
     dependencies:
       - build
     paths:
-      - rustfmt.toml
+      - .ignore # Used by `tagref`
+      - rustfmt.toml # Used by `cargo fmt`
     user: user
     command: |
       . $HOME/.cargo/env
       cargo fmt --all -- --check
       cargo clippy -- --deny clippy::pedantic
       tagref
+
+  run:
+    dependencies:
+      - lint
+    user: user
+    command: |
+      . $HOME/.cargo/env
+      cargo run
