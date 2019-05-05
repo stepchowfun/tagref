@@ -7,7 +7,13 @@ mod walk;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, SubCommand};
 use colored::Colorize;
-use std::{collections::HashMap, io::BufReader, path::Path, process::exit};
+use std::{
+  collections::HashMap,
+  io::BufReader,
+  path::Path,
+  process::exit,
+  sync::{Arc, Mutex},
+};
 
 // The program version
 const VERSION: &str = "0.0.8";
@@ -75,10 +81,12 @@ fn entry() -> Result<(), String> {
   match matches.subcommand_name() {
     Some(LIST_TAGS_COMMAND) => {
       // Parse and print all the tags.
-      let _ = walk::walk(&path, |file_path, file| {
+      let mutex = Arc::new(Mutex::new(()));
+      let _ = walk::walk(&path, move |file_path, file| {
         for tag in
           label::parse(label::Type::Tag, file_path, BufReader::new(file))
         {
+          let _ = mutex.lock().unwrap(); // Safe assuming no poisoning
           println!("{}", tag);
         }
       });
@@ -86,24 +94,31 @@ fn entry() -> Result<(), String> {
 
     Some(LIST_REFS_COMMAND) => {
       // Parse and print all the references.
-      let _ = walk::walk(&path, |file_path, file| {
+      let mutex = Arc::new(Mutex::new(()));
+      let _ = walk::walk(&path, move |file_path, file| {
         for r#ref in
           label::parse(label::Type::Ref, file_path, BufReader::new(file))
         {
+          let _ = mutex.lock().unwrap(); // Safe assuming no poisoning
           println!("{}", r#ref);
         }
       });
     }
 
     Some(LIST_UNUSED_COMMAND) => {
-      // Parse all the tags into a `HashMap`. The values are `Vec`s to allow
-      // for duplicates.
-      let mut tags_map = HashMap::new();
-      let _ = walk::walk(&path, |file_path, file| {
+      // Store the tags into a `HashMap`. The values are `Vec`s to allow for
+      // duplicates.
+      let tags_map = Arc::new(Mutex::new(HashMap::new()));
+
+      // Parse all the tags.
+      let tags_map_add_tags = tags_map.clone();
+      let _ = walk::walk(&path, move |file_path, file| {
         for tag in
           label::parse(label::Type::Tag, file_path, BufReader::new(file))
         {
-          tags_map
+          tags_map_add_tags
+            .lock()
+            .unwrap() // Safe assuming no poisoning
             .entry(tag.label.clone())
             .or_insert_with(Vec::new)
             .push(tag.clone());
@@ -111,16 +126,20 @@ fn entry() -> Result<(), String> {
       });
 
       // Remove all the referenced tags.
-      let _ = walk::walk(&path, |file_path, file| {
+      let tags_map_remove_tags = tags_map.clone();
+      let _ = walk::walk(&path, move |file_path, file| {
         for r#ref in
           label::parse(label::Type::Ref, file_path, BufReader::new(file))
         {
-          tags_map.remove(&r#ref.label);
+          tags_map_remove_tags
+            .lock()
+            .unwrap() // Safe assuming no poisoning
+            .remove(&r#ref.label);
         }
       });
 
-      // Print the remaining tags.
-      for tags in tags_map.values() {
+      // Print the remaining tags. The `unwrap` is safe assuming no poisoning.
+      for tags in tags_map.lock().unwrap().values() {
         for tag in tags {
           println!("{}", tag);
         }
@@ -128,34 +147,43 @@ fn entry() -> Result<(), String> {
     }
 
     Some(CHECK_COMMAND) | None => {
-      // Parse all the tags into a `HashMap`. The values are `Vec`s to allow
-      // for duplicates. We'll report duplicates later.
-      let mut tags_map = HashMap::new();
-      let _ = walk::walk(&path, |file_path, file| {
+      // Parse all the tags into a `HashMap`. The values are `Vec`s to allow for
+      // duplicates. We'll report duplicates later.
+      let tags = Arc::new(Mutex::new(HashMap::new()));
+      let tags_clone = tags.clone();
+      let _ = walk::walk(&path, move |file_path, file| {
         for tag in
           label::parse(label::Type::Tag, file_path, BufReader::new(file))
         {
-          tags_map
+          tags_clone
+            .lock()
+            .unwrap() // Safe assuming no poisoning
             .entry(tag.label.clone())
             .or_insert_with(Vec::new)
             .push(tag.clone());
         }
       });
 
-      // Convert tags_map into a set and check for duplicates.
-      let tags = duplicates::check(&tags_map)?;
+      // Convert tags_map into a set and check for duplicates. The `unwrap` is
+      // safe assuming no poisoning.
+      let tags = duplicates::check(&tags.lock().unwrap())?;
 
       // Parse all the references.
-      let mut refs = Vec::new();
-      let files_scanned = walk::walk(&path, |file_path, file| {
-        refs.extend(label::parse(
-          label::Type::Ref,
-          file_path,
-          BufReader::new(file),
-        ));
+      let refs = Arc::new(Mutex::new(Vec::new()));
+      let refs_clone = refs.clone();
+      let files_scanned = walk::walk(&path, move |file_path, file| {
+        let results =
+          label::parse(label::Type::Ref, file_path, BufReader::new(file));
+        if !results.is_empty() {
+          refs_clone
+            .lock()
+            .unwrap() // Safe assuming no poisoning
+            .extend(results);
+        }
       });
 
-      // Check the references.
+      // Check the references. The `unwrap`s are safe assuming no poisoning.
+      let refs = refs.lock().unwrap();
       citations::check(&tags, &refs)?;
       println!(
         "{}",
