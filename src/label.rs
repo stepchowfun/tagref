@@ -5,8 +5,8 @@ use std::{
   path::{Path, PathBuf},
 };
 
-const TAG_REGEX: &str = r"(?i)\[\s*tag\s*:([^\]]*)\]";
-const REF_REGEX: &str = r"(?i)\[\s*ref\s*:([^\]]*)\]";
+const TAG_REGEX: &str = r"(?i)\[\s*tag\s*:\s*([^\]\s]*)\s*\]";
+const REF_REGEX: &str = r"(?i)\[\s*ref\s*:\s*([^\]\s]*)\s*\]";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Type {
@@ -64,7 +64,7 @@ pub fn parse<R: BufRead>(
         // `Some`. Hence we are justified in unwrapping.
         labels.push(Label {
           label_type,
-          label: captures.get(1).unwrap().as_str().trim().to_owned(),
+          label: captures.get(1).unwrap().as_str().to_owned(),
           path: path.to_owned(),
           line_number: line_number + 1,
         });
@@ -145,10 +145,11 @@ mod tests {
   }
 
   #[test]
-  fn parse_multiple_per_line() {
+  fn parse_case() {
     let path = Path::new("file.rs").to_owned();
     let contents = r"
-      [tag:label3] [tag:label4]
+      [ TAG: label3 ]
+      [ TAG: LABEL3 ]
     "
     .trim()
     .as_bytes();
@@ -161,17 +162,18 @@ mod tests {
     assert_eq!(tags[0].path, path);
     assert_eq!(tags[0].line_number, 1);
     assert_eq!(tags[1].label_type, Type::Tag);
-    assert_eq!(tags[1].label, "label4");
+    assert_eq!(tags[1].label, "LABEL3");
     assert_eq!(tags[1].path, path);
-    assert_eq!(tags[1].line_number, 1);
+    assert_eq!(tags[1].line_number, 2);
+    assert_ne!(tags[0].label, tags[1].label);
   }
 
+
   #[test]
-  fn parse_multiple_lines() {
+  fn parse_multiple_per_line() {
     let path = Path::new("file.rs").to_owned();
     let contents = r"
-      [tag:label5]
-      [tag:label6]
+      [tag:label4][tag:label5]
     "
     .trim()
     .as_bytes();
@@ -180,11 +182,34 @@ mod tests {
 
     assert_eq!(tags.len(), 2);
     assert_eq!(tags[0].label_type, Type::Tag);
-    assert_eq!(tags[0].label, "label5");
+    assert_eq!(tags[0].label, "label4");
     assert_eq!(tags[0].path, path);
     assert_eq!(tags[0].line_number, 1);
     assert_eq!(tags[1].label_type, Type::Tag);
-    assert_eq!(tags[1].label, "label6");
+    assert_eq!(tags[1].label, "label5");
+    assert_eq!(tags[1].path, path);
+    assert_eq!(tags[1].line_number, 1);
+  }
+
+  #[test]
+  fn parse_multiple_lines() {
+    let path = Path::new("file.rs").to_owned();
+    let contents = r"
+      [tag:label6]
+      [tag:label7]
+    "
+    .trim()
+    .as_bytes();
+
+    let tags = parse(Type::Tag, &path, contents);
+
+    assert_eq!(tags.len(), 2);
+    assert_eq!(tags[0].label_type, Type::Tag);
+    assert_eq!(tags[0].label, "label6");
+    assert_eq!(tags[0].path, path);
+    assert_eq!(tags[0].line_number, 1);
+    assert_eq!(tags[1].label_type, Type::Tag);
+    assert_eq!(tags[1].label, "label7");
     assert_eq!(tags[1].path, path);
     assert_eq!(tags[1].line_number, 2);
   }
