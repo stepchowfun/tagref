@@ -74,9 +74,9 @@ USAGE:
     tagref [SUBCOMMAND]
 
 OPTIONS:
-    -h, --help           Prints help information
-    -p, --path <PATH>    Sets the path of the directory to scan
-    -v, --version        Prints version information
+    -h, --help              Prints help information
+    -p, --path <PATH>...    Sets the path of the directory to scan
+    -v, --version           Prints version information
 
 SUBCOMMANDS:
     check          Check all the tags and references (default)
