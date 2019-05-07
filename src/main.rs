@@ -56,8 +56,10 @@ fn entry() -> Result<(), String> {
         .short("p")
         .long(PATH_OPTION)
         .value_name("PATH")
-        .help("Sets the path of the directory to scan")
-        .takes_value(true),
+        .help("Adds the path of a directory to scan")
+        .takes_value(true)
+        .number_of_values(1)
+        .multiple(true),
     )
     .subcommand(
       SubCommand::with_name(CHECK_COMMAND)
@@ -76,16 +78,27 @@ fn entry() -> Result<(), String> {
     )
     .get_matches();
 
-  // Fetch the command-line arguments.
-  let path =
-    Path::new(&matches.value_of(PATH_OPTION).unwrap_or(".")).to_owned();
+  // Determine which paths to scan.
+  let paths = matches
+    .values_of(PATH_OPTION)
+    .map_or_else(
+      || vec![".".to_owned()],
+      |paths| {
+        paths
+          .map(std::borrow::ToOwned::to_owned)
+          .collect::<Vec<_>>()
+      },
+    )
+    .iter()
+    .map(|path| Path::new(path).to_owned())
+    .collect::<Vec<_>>();
 
   // Decide what to do based on the subcommand.
   match matches.subcommand_name() {
     Some(LIST_TAGS_COMMAND) => {
       // Parse and print all the tags.
       let mutex = Arc::new(Mutex::new(()));
-      let _ = walk::walk(&path, move |file_path, file| {
+      let _ = walk::walk(&paths, move |file_path, file| {
         for tag in
           label::parse(label::Type::Tag, file_path, BufReader::new(file))
         {
@@ -98,7 +111,7 @@ fn entry() -> Result<(), String> {
     Some(LIST_REFS_COMMAND) => {
       // Parse and print all the references.
       let mutex = Arc::new(Mutex::new(()));
-      let _ = walk::walk(&path, move |file_path, file| {
+      let _ = walk::walk(&paths, move |file_path, file| {
         for r#ref in
           label::parse(label::Type::Ref, file_path, BufReader::new(file))
         {
@@ -115,7 +128,7 @@ fn entry() -> Result<(), String> {
 
       // Parse all the tags.
       let tags_map_add_tags = tags_map.clone();
-      let _ = walk::walk(&path, move |file_path, file| {
+      let _ = walk::walk(&paths, move |file_path, file| {
         for tag in
           label::parse(label::Type::Tag, file_path, BufReader::new(file))
         {
@@ -130,7 +143,7 @@ fn entry() -> Result<(), String> {
 
       // Remove all the referenced tags.
       let tags_map_remove_tags = tags_map.clone();
-      let _ = walk::walk(&path, move |file_path, file| {
+      let _ = walk::walk(&paths, move |file_path, file| {
         for r#ref in
           label::parse(label::Type::Ref, file_path, BufReader::new(file))
         {
@@ -154,7 +167,7 @@ fn entry() -> Result<(), String> {
       // duplicates. We'll report duplicates later.
       let tags = Arc::new(Mutex::new(HashMap::new()));
       let tags_clone = tags.clone();
-      let _ = walk::walk(&path, move |file_path, file| {
+      let _ = walk::walk(&paths, move |file_path, file| {
         for tag in
           label::parse(label::Type::Tag, file_path, BufReader::new(file))
         {
@@ -174,7 +187,7 @@ fn entry() -> Result<(), String> {
       // Parse all the references.
       let refs = Arc::new(Mutex::new(Vec::new()));
       let refs_clone = refs.clone();
-      let files_scanned = walk::walk(&path, move |file_path, file| {
+      let files_scanned = walk::walk(&paths, move |file_path, file| {
         let results =
           label::parse(label::Type::Ref, file_path, BufReader::new(file));
         if !results.is_empty() {

@@ -168,7 +168,6 @@ mod tests {
     assert_ne!(tags[0].label, tags[1].label);
   }
 
-
   #[test]
   fn parse_multiple_per_line() {
     let path = Path::new("file.rs").to_owned();
