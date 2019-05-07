@@ -198,7 +198,7 @@ fn entry() -> Result<(), String> {
         }
       });
 
-      // Check the references. The `unwrap`s are safe assuming no poisoning.
+      // Check the references. The `unwrap` is safe assuming no poisoning.
       let refs = refs.lock().unwrap();
       citations::check(&tags, &refs)?;
       println!(
