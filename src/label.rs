@@ -83,7 +83,7 @@ mod tests {
   #[test]
   fn parse_empty() {
     let path = Path::new("file.rs").to_owned();
-    let contents = "".as_bytes();
+    let contents = b"" as &[u8];
 
     let tags = parse(Type::Tag, &path, contents);
 

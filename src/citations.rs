@@ -100,7 +100,7 @@ mod tests {
         panic!("The check(...) call should have failed.");
       }
       Err(error) => {
-        assert!(error.contains(&format!("{}", refs[1].label)));
+        assert!(error.contains(&refs[1].label));
       }
     };
   }
