@@ -28,7 +28,7 @@ The syntax is `[tag:label]` for tags and `[ref:label]` for references. Tagref wo
 
 ## Installation
 
-### Default installation
+### Easy installation
 
 If you are running macOS or a GNU-based Linux on an x86-64 CPU, you can install Tagref with this command:
 
@@ -38,32 +38,34 @@ curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSf
 
 The same command can be used again to update Tagref to the latest version.
 
-### Custom installation
+**NOTE:** Piping `curl` to `sh` is dangerous since the server might be compromised. If you're concerned about this, you can download the installation script and inspect it or choose one of the other installation methods.
+
+#### Customizing the installation
 
 The installation script supports the following environment variables:
 
 - `VERSION=x.y.z` (defaults to the latest version)
 - `PREFIX=/path/to/install` (defaults to `/usr/local/bin`)
 
-For example, the following will install Tagref into the current directory:
+For example, the following will install Tagref into the working directory:
 
 ```sh
 curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | PREFIX=. sh
 ```
 
-### Installation on other platforms
+### Manual installation
 
-If there is no pre-built binary available for your platform, you can build and install Tagref with [Cargo](https://doc.rust-lang.org/book/second-edition/ch14-04-installing-binaries.html):
+The [releases page](https://github.com/stepchowfun/tagref/releases) has precompiled binaries for macOS or Linux systems running on an x86-64 CPU. You can download one of them and place it in a directory listed in your [`PATH`](https://en.wikipedia.org/wiki/PATH_\(variable\)).
+
+### Installation with Cargo
+
+If you have [Cargo](https://doc.rust-lang.org/cargo/), you can install Tagref as follows:
 
 ```sh
 cargo install tagref
 ```
 
-Then you can update Tagref to the latest version using the `--force` flag:
-
-```sh
-cargo install tagref --force
-```
+You can run that command with `--force` to update an existing installation.
 
 ## Usage
 
