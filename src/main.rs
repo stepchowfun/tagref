@@ -19,7 +19,7 @@ use std::{
 extern crate lazy_static;
 
 // The program version
-const VERSION: &str = "1.1.0";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // Command-line option and subcommand names
 const CHECK_COMMAND: &str = "check";
