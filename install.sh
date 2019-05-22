@@ -49,6 +49,7 @@
   fi
 
   # Install it at the requested destination.
+  # shellcheck disable=SC2024
   mv "$TEMPFILE" "$DESTINATION" 2> /dev/null || sudo mv "$TEMPFILE" "$DESTINATION" < /dev/tty
 
   # Let the user know it worked.
