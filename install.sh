@@ -6,10 +6,9 @@
 #   PREFIX=/usr/local/bin ./install.sh
 
 # We wrap everything in parentheses for two reasons:
-# 1. To prevent the shell from executing only a prefix of the script if the
-#    download is interrupted
-# 2. To ensure that any working directory changes with `cd` are local to this
-#    script and don't affect the calling user's shell
+# 1. To prevent the shell from executing only a prefix of the script if the download is interrupted
+# 2. To ensure that any working directory changes with `cd` are local to this script and don't
+#    affect the calling user's shell
 (
   # Where the binary will be installed
   DESTINATION="${PREFIX:-/usr/local/bin}/tagref"
@@ -48,17 +47,19 @@
   fi
 
   # Download the binary.
-  if ! curl "https://github.com/stepchowfun/tagref/releases/download/$RELEASE/$FILENAME" -o "$FILENAME" -LSf; then
+  if ! curl "https://github.com/stepchowfun/tagref/releases/download/$RELEASE/$FILENAME" \
+      -o "$FILENAME" -LSf; then
     fail 'There was an error downloading the binary.'
   fi
 
   # Download the checksum.
-  if ! curl "https://github.com/stepchowfun/tagref/releases/download/$RELEASE/$FILENAME.sha256" -o "$FILENAME.sha256" -LSf; then
+  if ! curl "https://github.com/stepchowfun/tagref/releases/download/$RELEASE/$FILENAME.sha256" \
+      -o "$FILENAME.sha256" -LSf; then
     fail 'There was an error downloading the checksum.'
   fi
 
   # Verify the checksum.
-  if ! sha256sum --check --strict --quiet --status "$FILENAME.sha256"; then
+  if ! shasum --algorithm 256 --check --status "$FILENAME.sha256"; then
     fail 'The downloaded binary was corrupted. Feel free to try again.'
   fi
 
@@ -69,7 +70,9 @@
 
   # Install it at the requested destination.
   # shellcheck disable=SC2024
-  mv "$FILENAME" "$DESTINATION" 2> /dev/null || sudo mv "$FILENAME" "$DESTINATION" < /dev/tty || fail "Unable to install the binary at $DESTINATION."
+  mv "$FILENAME" "$DESTINATION" 2> /dev/null ||
+    sudo mv "$FILENAME" "$DESTINATION" < /dev/tty ||
+    fail "Unable to install the binary at $DESTINATION."
 
   # Remove the temporary directory.
   cd ..
