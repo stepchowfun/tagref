@@ -38,7 +38,7 @@ curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSf
 
 The same command can be used again to update Tagref to the latest version.
 
-**NOTE:** Piping `curl` to `sh` is dangerous since the server might be compromised. If you're concerned about this, you can download the installation script and inspect it or choose one of the other installation methods.
+**NOTE:** Piping `curl` to `sh` is dangerous since the server might be compromised. If you're concerned about this, you can download and inspect the installation script or choose one of the other installation methods.
 
 #### Customizing the installation
 
