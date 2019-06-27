@@ -1,5 +1,5 @@
 image: ubuntu:18.04
-default: ci
+default: check
 tasks:
   install_packages:
     command: |
@@ -107,13 +107,6 @@ tasks:
       set -euo pipefail
       . $HOME/.cargo/env
       cargo run
-
-  ci:
-    dependencies:
-      - build
-      - lint
-      - run
-      - test
 
   check:
     dependencies:
