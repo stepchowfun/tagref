@@ -5,12 +5,12 @@ mod label;
 mod walk;
 
 use atty::Stream;
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::Colorize;
 use std::{
     collections::HashMap,
     io::BufReader,
-    path::Path,
+    path::{Path, PathBuf},
     process::exit,
     sync::{Arc, Mutex},
 };
@@ -28,11 +28,8 @@ const LIST_TAGS_COMMAND: &str = "list-tags";
 const LIST_UNUSED_COMMAND: &str = "list-unused";
 const PATH_OPTION: &str = "path";
 
-// Program entrypoint
-fn entry() -> Result<(), String> {
-    // Determine whether to print colored output.
-    colored::control::set_override(atty::is(Stream::Stdout));
-
+// Parse the command-line optins.
+fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>) {
     // Set up the command-line interface.
     let matches = App::new("Tagref")
         .version(VERSION)
@@ -84,6 +81,19 @@ fn entry() -> Result<(), String> {
         .iter()
         .map(|path| Path::new(path).to_owned())
         .collect::<Vec<_>>();
+
+    // Return the command-line options.
+    (matches, paths)
+}
+
+// Program entrypoint
+#[allow(clippy::too_many_lines)]
+fn entry() -> Result<(), String> {
+    // Determine whether to print colored output.
+    colored::control::set_override(atty::is(Stream::Stdout));
+
+    // Parse the command-line options.
+    let (matches, paths) = settings();
 
     // Decide what to do based on the subcommand.
     match matches.subcommand_name() {
