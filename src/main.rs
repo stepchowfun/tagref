@@ -48,6 +48,7 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>) {
         )
         .setting(AppSettings::ColoredHelp)
         .setting(AppSettings::UnifiedHelpMessage)
+        .setting(AppSettings::VersionlessSubcommands)
         .arg(
             Arg::with_name(PATH_OPTION)
                 .short("p")
