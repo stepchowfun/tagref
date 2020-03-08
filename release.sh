@@ -5,12 +5,12 @@ set -euo pipefail
 # macOS machine with an x86-64 processor. Usage:
 #   ./release.sh
 
-# The release process involves three pull requests:
+# The release process involves three steps:
 # 1. Bump the version in `Cargo.toml`, run `cargo build` to update `Cargo.lock`, and update
-#    `CHANGELOG.md` with information about the new version. Once this PR is merged, run
-#    `cargo publish`.
+#    `CHANGELOG.md` with information about the new version. Ship those changes as a single pull
+#    request.
 # 2. Run this script and upload the files in the `release` directory to GitHub as release artifacts.
-# 3. Update the versions in `install.sh` and `toast.yml` to point to the new release.
+# 3. Update the version in `install.sh` to point to the new release.
 
 # We wrap everything in parentheses to ensure that any working directory changes with `cd` are local
 # to this script and don't affect the calling user's shell.
@@ -28,15 +28,18 @@ set -euo pipefail
   mkdir release
 
   # Copy the artifacts into the `release` directory.
-  cp artifacts/tagref-x86_64-unknown-linux-gnu release/tagref-x86_64-unknown-linux-gnu
-  cp target/release/tagref release/tagref-x86_64-apple-darwin
+  cp artifacts/tagreg-x86_64-unknown-linux-gnu release/tagreg-x86_64-unknown-linux-gnu
+  cp target/release/tagreg release/tagreg-x86_64-apple-darwin
 
   # Compute checksums of the artifacts.
   cd release
-  shasum --algorithm 256 --binary tagref-x86_64-apple-darwin > tagref-x86_64-apple-darwin.sha256
-  shasum --algorithm 256 --binary tagref-x86_64-unknown-linux-gnu > tagref-x86_64-unknown-linux-gnu.sha256
+  shasum --algorithm 256 --binary tagreg-x86_64-apple-darwin > tagreg-x86_64-apple-darwin.sha256
+  shasum --algorithm 256 --binary tagreg-x86_64-unknown-linux-gnu > tagreg-x86_64-unknown-linux-gnu.sha256
 
   # Verify the checksums.
-  shasum --algorithm 256 --check --status tagref-x86_64-apple-darwin.sha256
-  shasum --algorithm 256 --check --status tagref-x86_64-unknown-linux-gnu.sha256
+  shasum --algorithm 256 --check --status tagreg-x86_64-apple-darwin.sha256
+  shasum --algorithm 256 --check --status tagreg-x86_64-unknown-linux-gnu.sha256
+
+  # Publish to crates.io.
+  cargo publish
 )
