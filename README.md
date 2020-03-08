@@ -1,7 +1,5 @@
 # Tagref
 
-[![Build Status](https://travis-ci.org/stepchowfun/tagref.svg?branch=master)](https://travis-ci.org/stepchowfun/tagref)
-
 *Tagref* helps you refer to other locations in your codebase. For example, you might create a tag like this:
 
 ```ruby
