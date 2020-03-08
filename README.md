@@ -1,5 +1,7 @@
 # Tagref
 
+[![Build status](https://github.com/stepchowfun/tagref/workflows/Continuous%20integration/badge.svg?branch=master)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amaster)
+
 *Tagref* helps you refer to other locations in your codebase. For example, you might create a tag like this:
 
 ```ruby
