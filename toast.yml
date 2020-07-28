@@ -28,7 +28,7 @@ tasks:
     command: |
       set -euo pipefail
       curl https://sh.rustup.rs -sSf |
-        sh -s -- -y --default-toolchain 1.41.0
+        sh -s -- -y --default-toolchain 1.45.0
       . $HOME/.cargo/env
       rustup component add clippy
       rustup component add rustfmt
@@ -85,9 +85,9 @@ tasks:
     dependencies:
       - build
     input_paths:
-      - .ignore      # Used by `tagref`
-      - install.sh   # Linted by ShellCheck
-      - release.sh   # Linted by ShellCheck
+      - .ignore    # Used by `tagref`
+      - install.sh # Linted by ShellCheck
+      - release.sh # Linted by ShellCheck
     user: user
     command: |
       set -euo pipefail
@@ -102,6 +102,8 @@ tasks:
   run:
     dependencies:
       - build
+    input_paths:
+      - .ignore # Used by `tagref`
     user: user
     command: |
       set -euo pipefail

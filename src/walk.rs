@@ -11,7 +11,7 @@ use std::{
 // This function visits each file in the given directory and calls the given callback with the path
 // and the file. It skips files which cannot be read (e.g., due to lack of permissions). It also
 // skips over symlinks. The number of files traversed is returned.
-pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File) -> ()>(
+pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
     paths: &[PathBuf],
     callback: T,
 ) -> usize {
