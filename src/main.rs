@@ -1,7 +1,7 @@
-mod citations;
 mod count;
 mod duplicates;
 mod label;
+mod r#ref;
 mod walk;
 
 use atty::Stream;
@@ -103,7 +103,7 @@ fn entry() -> Result<(), String> {
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
                 for tag in label::parse(label::Type::Tag, file_path, BufReader::new(file)) {
-                    let _ = mutex.lock().unwrap(); // Safe assuming no poisoning
+                    let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
                     println!("{}", tag);
                 }
             });
@@ -114,7 +114,7 @@ fn entry() -> Result<(), String> {
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
                 for r#ref in label::parse(label::Type::Ref, file_path, BufReader::new(file)) {
-                    let _ = mutex.lock().unwrap(); // Safe assuming no poisoning
+                    let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
                     println!("{}", r#ref);
                 }
             });
@@ -191,7 +191,7 @@ fn entry() -> Result<(), String> {
 
             // Check the references. The `unwrap` is safe assuming no poisoning.
             let refs = refs.lock().unwrap();
-            citations::check(&tags, &refs)?;
+            r#ref::check(&tags, &refs)?;
             println!(
                 "{}",
                 format!(
