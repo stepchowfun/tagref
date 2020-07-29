@@ -25,7 +25,7 @@ pub fn check(tags: &HashMap<String, Label>, refs: &[Label]) -> Result<(), String
 mod tests {
     use crate::{
         label::{Label, Type},
-        r#ref::check,
+        references::check,
     };
     use std::{collections::HashMap, path::Path};
 

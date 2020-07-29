@@ -76,9 +76,11 @@ USAGE:
     tagref [SUBCOMMAND]
 
 OPTIONS:
-    -h, --help              Prints help information
-    -p, --path <PATH>...    Sets the path of the directory to scan
-    -v, --version           Prints version information
+    -h, --help                       Prints help information
+    -p, --path <PATH>...             Adds the path of a directory to scan [default: .]
+    -r, --ref-prefix <REF_PREFIX>    Sets the prefix used for locating references [default: ref]
+    -t, --tag-prefix <TAG_PREFIX>    Sets the prefix used for locating tags [default: tag]
+    -v, --version                    Prints version information
 
 SUBCOMMANDS:
     check          Check all the tags and references (default)

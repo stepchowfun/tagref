@@ -1,12 +1,9 @@
-use regex::Regex;
+use regex::{escape, Regex};
 use std::{
     fmt,
     io::BufRead,
     path::{Path, PathBuf},
 };
-
-const TAG_REGEX: &str = r"(?i)\[\s*tag\s*:\s*([^\]\s]*)\s*\]";
-const REF_REGEX: &str = r"(?i)\[\s*ref\s*:\s*([^\]\s]*)\s*\]";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Type {
@@ -40,16 +37,25 @@ impl fmt::Display for Label {
 }
 
 // This function returns all the labels in a file for a given type.
-pub fn parse<R: BufRead>(label_type: Type, path: &Path, reader: R) -> Vec<Label> {
-    lazy_static! {
-      // These `unwrap`s are safe because we manually inspected the regex.
-      static ref TAG_REGEX_COMPILED: Regex = Regex::new(TAG_REGEX).unwrap();
-      static ref REF_REGEX_COMPILED: Regex = Regex::new(REF_REGEX).unwrap();
-    }
-
+pub fn parse<R: BufRead>(
+    tag_prefix: &str,
+    ref_prefix: &str,
+    label_type: Type,
+    path: &Path,
+    reader: R,
+) -> Vec<Label> {
+    // The `unwrap`s below are safe because we manually inspected the regexes.
     let regex = match label_type {
-        Type::Tag => &TAG_REGEX_COMPILED as &Regex,
-        Type::Ref => &REF_REGEX_COMPILED as &Regex,
+        Type::Tag => Regex::new(&format!(
+            "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+            escape(tag_prefix)
+        ))
+        .unwrap(),
+        Type::Ref => Regex::new(&format!(
+            "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+            escape(ref_prefix)
+        ))
+        .unwrap(),
     };
 
     let mut labels: Vec<Label> = Vec::new();
@@ -81,7 +87,7 @@ mod tests {
         let path = Path::new("file.rs").to_owned();
         let contents = b"" as &[u8];
 
-        let tags = parse(Type::Tag, &path, contents);
+        let tags = parse("tag", "ref", Type::Tag, &path, contents);
 
         assert!(tags.is_empty());
     }
@@ -95,7 +101,7 @@ mod tests {
         .trim()
         .as_bytes();
 
-        let tags = parse(Type::Tag, &path, contents);
+        let tags = parse("tag", "ref", Type::Tag, &path, contents);
 
         assert_eq!(tags.len(), 1);
         assert_eq!(tags[0].label_type, Type::Tag);
@@ -113,7 +119,7 @@ mod tests {
         .trim()
         .as_bytes();
 
-        let refs = parse(Type::Ref, &path, contents);
+        let refs = parse("tag", "ref", Type::Ref, &path, contents);
 
         assert_eq!(refs.len(), 1);
         assert_eq!(refs[0].label_type, Type::Ref);
@@ -131,7 +137,7 @@ mod tests {
         .trim()
         .as_bytes();
 
-        let tags = parse(Type::Tag, &path, contents);
+        let tags = parse("tag", "ref", Type::Tag, &path, contents);
 
         assert_eq!(tags.len(), 1);
         assert_eq!(tags[0].label_type, Type::Tag);
@@ -150,7 +156,7 @@ mod tests {
         .trim()
         .as_bytes();
 
-        let tags = parse(Type::Tag, &path, contents);
+        let tags = parse("tag", "ref", Type::Tag, &path, contents);
 
         assert_eq!(tags.len(), 2);
         assert_eq!(tags[0].label_type, Type::Tag);
@@ -173,7 +179,7 @@ mod tests {
         .trim()
         .as_bytes();
 
-        let tags = parse(Type::Tag, &path, contents);
+        let tags = parse("tag", "ref", Type::Tag, &path, contents);
 
         assert_eq!(tags.len(), 2);
         assert_eq!(tags[0].label_type, Type::Tag);
@@ -196,7 +202,7 @@ mod tests {
         .trim()
         .as_bytes();
 
-        let tags = parse(Type::Tag, &path, contents);
+        let tags = parse("tag", "ref", Type::Tag, &path, contents);
 
         assert_eq!(tags.len(), 2);
         assert_eq!(tags[0].label_type, Type::Tag);
