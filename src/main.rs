@@ -7,6 +7,7 @@ mod walk;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::Colorize;
+use regex::{escape, Regex};
 use std::{
     collections::HashMap,
     io::BufReader,
@@ -108,6 +109,18 @@ fn entry() -> Result<(), String> {
     // Parse the command-line options.
     let (matches, paths, tag_prefix, ref_prefix) = settings();
 
+    // Compile the regular expressions in advance.
+    let tag_regex: Regex = Regex::new(&format!(
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        escape(&tag_prefix)
+    ))
+    .unwrap();
+    let ref_regex: Regex = Regex::new(&format!(
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        escape(&ref_prefix)
+    ))
+    .unwrap();
+
     // Decide what to do based on the subcommand.
     match matches.subcommand_name() {
         Some(LIST_TAGS_COMMAND) => {
@@ -115,8 +128,8 @@ fn entry() -> Result<(), String> {
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
                 for tag in label::parse(
-                    &tag_prefix,
-                    &ref_prefix,
+                    &tag_regex,
+                    &ref_regex,
                     label::Type::Tag,
                     file_path,
                     BufReader::new(file),
@@ -132,8 +145,8 @@ fn entry() -> Result<(), String> {
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
                 for r#ref in label::parse(
-                    &tag_prefix,
-                    &ref_prefix,
+                    &tag_regex,
+                    &ref_regex,
                     label::Type::Ref,
                     file_path,
                     BufReader::new(file),
@@ -150,12 +163,12 @@ fn entry() -> Result<(), String> {
 
             // Parse all the tags.
             let tags_map_add_tags = tags_map.clone();
-            let tag_prefix_clone = tag_prefix.clone();
-            let ref_prefix_clone = ref_prefix.clone();
+            let tag_regex_clone = tag_regex.clone();
+            let ref_regex_clone = tag_regex.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
                 for tag in label::parse(
-                    &tag_prefix_clone,
-                    &ref_prefix_clone,
+                    &tag_regex_clone,
+                    &ref_regex_clone,
                     label::Type::Tag,
                     file_path,
                     BufReader::new(file),
@@ -173,8 +186,8 @@ fn entry() -> Result<(), String> {
             let tags_map_remove_tags = tags_map.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
                 for r#ref in label::parse(
-                    &tag_prefix,
-                    &ref_prefix,
+                    &tag_regex,
+                    &ref_regex,
                     label::Type::Ref,
                     file_path,
                     BufReader::new(file),
@@ -199,12 +212,12 @@ fn entry() -> Result<(), String> {
             // We'll report duplicates later.
             let tags = Arc::new(Mutex::new(HashMap::new()));
             let tags_clone = tags.clone();
-            let tag_prefix_clone = tag_prefix.clone();
-            let ref_prefix_clone = ref_prefix.clone();
+            let tag_regex_clone = tag_regex.clone();
+            let ref_regex_clone = tag_regex.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
                 for tag in label::parse(
-                    &tag_prefix_clone,
-                    &ref_prefix_clone,
+                    &tag_regex_clone,
+                    &ref_regex_clone,
                     label::Type::Tag,
                     file_path,
                     BufReader::new(file),
@@ -227,8 +240,8 @@ fn entry() -> Result<(), String> {
             let refs_clone = refs.clone();
             let files_scanned = walk::walk(&paths, move |file_path, file| {
                 let results = label::parse(
-                    &tag_prefix,
-                    &ref_prefix,
+                    &tag_regex,
+                    &ref_regex,
                     label::Type::Ref,
                     file_path,
                     BufReader::new(file),
