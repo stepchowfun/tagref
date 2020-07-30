@@ -1,7 +1,7 @@
 mod count;
 mod duplicates;
 mod label;
-mod r#ref;
+mod references;
 mod walk;
 
 use atty::Stream;
@@ -15,9 +15,6 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-#[macro_use]
-extern crate lazy_static;
-
 // The program version
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -27,9 +24,11 @@ const LIST_REFS_COMMAND: &str = "list-refs";
 const LIST_TAGS_COMMAND: &str = "list-tags";
 const LIST_UNUSED_COMMAND: &str = "list-unused";
 const PATH_OPTION: &str = "path";
+const TAG_PREFIX_OPTION: &str = "tag-prefix";
+const REF_PREFIX_OPTION: &str = "ref-prefix";
 
 // Parse the command-line optins.
-fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>) {
+fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
     // Set up the command-line interface.
     let matches = App::new("Tagref")
         .version(VERSION)
@@ -55,9 +54,24 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>) {
                 .long(PATH_OPTION)
                 .value_name("PATH")
                 .help("Adds the path of a directory to scan")
-                .takes_value(true)
-                .number_of_values(1)
+                .default_value(".") // [tag:path_default]
                 .multiple(true),
+        )
+        .arg(
+            Arg::with_name(TAG_PREFIX_OPTION)
+                .short("t")
+                .long(TAG_PREFIX_OPTION)
+                .value_name("TAG_PREFIX")
+                .help("Sets the prefix used for locating tags")
+                .default_value("tag"), // [tag:tag_prefix_default]
+        )
+        .arg(
+            Arg::with_name(REF_PREFIX_OPTION)
+                .short("r")
+                .long(REF_PREFIX_OPTION)
+                .value_name("REF_PREFIX")
+                .help("Sets the prefix used for locating references")
+                .default_value("ref"), // [tag:ref_prefix_default]
         )
         .subcommand(
             SubCommand::with_name(CHECK_COMMAND)
@@ -68,23 +82,21 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>) {
         .subcommand(SubCommand::with_name(LIST_REFS_COMMAND).about("List all the references"))
         .get_matches();
 
-    // Determine which paths to scan.
+    // Determine which paths to scan. The `unwrap` is safe due to [ref:path_default].
     let paths = matches
         .values_of(PATH_OPTION)
-        .map_or_else(
-            || vec![".".to_owned()],
-            |paths| {
-                paths
-                    .map(std::borrow::ToOwned::to_owned)
-                    .collect::<Vec<_>>()
-            },
-        )
-        .iter()
+        .unwrap()
         .map(|path| Path::new(path).to_owned())
         .collect::<Vec<_>>();
 
+    // Determine the ref prefix. The `unwrap` is safe due to [ref:ref_prefix_default].
+    let ref_prefix = matches.value_of(REF_PREFIX_OPTION).unwrap().to_owned();
+
+    // Determine the tag prefix. The `unwrap` is safe due to [ref:tag_prefix_default].
+    let tag_prefix = matches.value_of(TAG_PREFIX_OPTION).unwrap().to_owned();
+
     // Return the command-line options.
-    (matches, paths)
+    (matches, paths, tag_prefix, ref_prefix)
 }
 
 // Program entrypoint
@@ -94,7 +106,7 @@ fn entry() -> Result<(), String> {
     colored::control::set_override(atty::is(Stream::Stdout));
 
     // Parse the command-line options.
-    let (matches, paths) = settings();
+    let (matches, paths, tag_prefix, ref_prefix) = settings();
 
     // Decide what to do based on the subcommand.
     match matches.subcommand_name() {
@@ -102,7 +114,13 @@ fn entry() -> Result<(), String> {
             // Parse and print all the tags.
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
-                for tag in label::parse(label::Type::Tag, file_path, BufReader::new(file)) {
+                for tag in label::parse(
+                    &tag_prefix,
+                    &ref_prefix,
+                    label::Type::Tag,
+                    file_path,
+                    BufReader::new(file),
+                ) {
                     let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
                     println!("{}", tag);
                 }
@@ -113,7 +131,13 @@ fn entry() -> Result<(), String> {
             // Parse and print all the references.
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
-                for r#ref in label::parse(label::Type::Ref, file_path, BufReader::new(file)) {
+                for r#ref in label::parse(
+                    &tag_prefix,
+                    &ref_prefix,
+                    label::Type::Ref,
+                    file_path,
+                    BufReader::new(file),
+                ) {
                     let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
                     println!("{}", r#ref);
                 }
@@ -126,8 +150,16 @@ fn entry() -> Result<(), String> {
 
             // Parse all the tags.
             let tags_map_add_tags = tags_map.clone();
+            let tag_prefix_clone = tag_prefix.clone();
+            let ref_prefix_clone = ref_prefix.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
-                for tag in label::parse(label::Type::Tag, file_path, BufReader::new(file)) {
+                for tag in label::parse(
+                    &tag_prefix_clone,
+                    &ref_prefix_clone,
+                    label::Type::Tag,
+                    file_path,
+                    BufReader::new(file),
+                ) {
                     tags_map_add_tags
                         .lock()
                         .unwrap() // Safe assuming no poisoning
@@ -140,7 +172,13 @@ fn entry() -> Result<(), String> {
             // Remove all the referenced tags.
             let tags_map_remove_tags = tags_map.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
-                for r#ref in label::parse(label::Type::Ref, file_path, BufReader::new(file)) {
+                for r#ref in label::parse(
+                    &tag_prefix,
+                    &ref_prefix,
+                    label::Type::Ref,
+                    file_path,
+                    BufReader::new(file),
+                ) {
                     tags_map_remove_tags
                         .lock()
                         .unwrap() // Safe assuming no poisoning
@@ -161,8 +199,16 @@ fn entry() -> Result<(), String> {
             // We'll report duplicates later.
             let tags = Arc::new(Mutex::new(HashMap::new()));
             let tags_clone = tags.clone();
+            let tag_prefix_clone = tag_prefix.clone();
+            let ref_prefix_clone = ref_prefix.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
-                for tag in label::parse(label::Type::Tag, file_path, BufReader::new(file)) {
+                for tag in label::parse(
+                    &tag_prefix_clone,
+                    &ref_prefix_clone,
+                    label::Type::Tag,
+                    file_path,
+                    BufReader::new(file),
+                ) {
                     tags_clone
                         .lock()
                         .unwrap() // Safe assuming no poisoning
@@ -180,7 +226,13 @@ fn entry() -> Result<(), String> {
             let refs = Arc::new(Mutex::new(Vec::new()));
             let refs_clone = refs.clone();
             let files_scanned = walk::walk(&paths, move |file_path, file| {
-                let results = label::parse(label::Type::Ref, file_path, BufReader::new(file));
+                let results = label::parse(
+                    &tag_prefix,
+                    &ref_prefix,
+                    label::Type::Ref,
+                    file_path,
+                    BufReader::new(file),
+                );
                 if !results.is_empty() {
                     refs_clone
                         .lock()
@@ -191,7 +243,7 @@ fn entry() -> Result<(), String> {
 
             // Check the references. The `unwrap` is safe assuming no poisoning.
             let refs = refs.lock().unwrap();
-            r#ref::check(&tags, &refs)?;
+            references::check(&tags, &refs)?;
             println!(
                 "{}",
                 format!(
