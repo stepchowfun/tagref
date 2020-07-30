@@ -14,7 +14,7 @@
   DESTINATION="${PREFIX:-/usr/local/bin}/tagref"
 
   # Which version to download
-  RELEASE="v${VERSION:-1.2.1}"
+  RELEASE="v${VERSION:-1.3.0}"
 
   # Determine which binary to download.
   FILENAME=''

@@ -28,17 +28,17 @@ set -euo pipefail
   mkdir release
 
   # Copy the artifacts into the `release` directory.
-  cp artifacts/tagreg-x86_64-unknown-linux-gnu release/tagreg-x86_64-unknown-linux-gnu
-  cp target/release/tagreg release/tagreg-x86_64-apple-darwin
+  cp artifacts/tagref-x86_64-unknown-linux-gnu release/tagref-x86_64-unknown-linux-gnu
+  cp target/release/tagref release/tagref-x86_64-apple-darwin
 
   # Compute checksums of the artifacts.
   cd release
-  shasum --algorithm 256 --binary tagreg-x86_64-apple-darwin > tagreg-x86_64-apple-darwin.sha256
-  shasum --algorithm 256 --binary tagreg-x86_64-unknown-linux-gnu > tagreg-x86_64-unknown-linux-gnu.sha256
+  shasum --algorithm 256 --binary tagref-x86_64-apple-darwin > tagref-x86_64-apple-darwin.sha256
+  shasum --algorithm 256 --binary tagref-x86_64-unknown-linux-gnu > tagref-x86_64-unknown-linux-gnu.sha256
 
   # Verify the checksums.
-  shasum --algorithm 256 --check --status tagreg-x86_64-apple-darwin.sha256
-  shasum --algorithm 256 --check --status tagreg-x86_64-unknown-linux-gnu.sha256
+  shasum --algorithm 256 --check --status tagref-x86_64-apple-darwin.sha256
+  shasum --algorithm 256 --check --status tagref-x86_64-unknown-linux-gnu.sha256
 
   # Publish to crates.io.
   cargo publish
