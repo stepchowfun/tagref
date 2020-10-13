@@ -31,7 +31,7 @@ impl fmt::Display for Label {
             },
             self.label,
             self.path.to_string_lossy(),
-            self.line_number
+            self.line_number,
         )
     }
 }
