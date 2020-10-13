@@ -76,11 +76,11 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
         )
         .subcommand(
             SubCommand::with_name(CHECK_COMMAND)
-                .about("Check all the tags and references (default)"),
+                .about("Checks all the tags and references (default)"),
         )
-        .subcommand(SubCommand::with_name(LIST_TAGS_COMMAND).about("List all the tags"))
-        .subcommand(SubCommand::with_name(LIST_UNUSED_COMMAND).about("List the unreferenced tags"))
-        .subcommand(SubCommand::with_name(LIST_REFS_COMMAND).about("List all the references"))
+        .subcommand(SubCommand::with_name(LIST_TAGS_COMMAND).about("Lists all the tags"))
+        .subcommand(SubCommand::with_name(LIST_UNUSED_COMMAND).about("Lists the unreferenced tags"))
+        .subcommand(SubCommand::with_name(LIST_REFS_COMMAND).about("Lists all the references"))
         .get_matches();
 
     // Determine which paths to scan. The `unwrap` is safe due to [ref:path_default].

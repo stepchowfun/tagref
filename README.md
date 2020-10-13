@@ -63,11 +63,11 @@ OPTIONS:
     -v, --version                    Prints version information
 
 SUBCOMMANDS:
-    check          Check all the tags and references (default)
+    check          Checks all the tags and references (default)
     help           Prints this message or the help of the given subcommand(s)
-    list-refs      List all the references
-    list-tags      List all the tags
-    list-unused    List the unreferenced tags
+    list-refs      Lists all the references
+    list-tags      Lists all the tags
+    list-unused    Lists the unreferenced tags
 ```
 
 ## Installation
