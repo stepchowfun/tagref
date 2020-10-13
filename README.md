@@ -40,7 +40,7 @@ first_flob = flobs[0] # This is safe due to [ref:flobs_nonempty].
 
 Tagref ensures such references remain valid. If someone tries to delete or rename the tag, Tagref will complain. More precisely, it checks the following:
 
-1. References actually point to tags. A tag cannot be deleted without updating the references that point to it.
+1. References actually point to tags. A tag cannot be deleted or renamed without updating the references that point to it.
 2. Tags are distinct. There is never any ambiguity about which tag is being referenced.
 
 Note that, in the example above, Tagref won't ensure that the `get_flobs` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
