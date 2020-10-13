@@ -64,7 +64,7 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
                 .long(TAG_PREFIX_OPTION)
                 .value_name("TAG_PREFIX")
                 .help("Sets the prefix used for locating tags")
-                .default_value("tag"), // [tag:tag_prefix_default]
+                .default_value("tag"), // [tag:tag_prefix_default] ,
         )
         .arg(
             Arg::with_name(REF_PREFIX_OPTION)
@@ -72,7 +72,7 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
                 .long(REF_PREFIX_OPTION)
                 .value_name("REF_PREFIX")
                 .help("Sets the prefix used for locating references")
-                .default_value("ref"), // [tag:ref_prefix_default]
+                .default_value("ref"), // [tag:ref_prefix_default] ,
         )
         .subcommand(
             SubCommand::with_name(CHECK_COMMAND)
@@ -112,12 +112,12 @@ fn entry() -> Result<(), String> {
     // Compile the regular expressions in advance.
     let tag_regex: Regex = Regex::new(&format!(
         "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
-        escape(&tag_prefix)
+        escape(&tag_prefix),
     ))
     .unwrap();
     let ref_regex: Regex = Regex::new(&format!(
         "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
-        escape(&ref_prefix)
+        escape(&ref_prefix),
     ))
     .unwrap();
 
@@ -263,9 +263,9 @@ fn entry() -> Result<(), String> {
                     "{} and {} validated in {}.",
                     count::count(tags.len(), "tag"),
                     count::count(refs.len(), "reference"),
-                    count::count(files_scanned, "file")
+                    count::count(files_scanned, "file"),
                 )
-                .green()
+                .green(),
             );
         }
 
