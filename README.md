@@ -43,9 +43,9 @@ Tagref ensures such references remain valid. If someone tries to delete or renam
 1. References actually point to tags. A tag cannot be deleted without updating the references that point to it.
 2. Tags are distinct. There is never any ambiguity about which tag is being referenced.
 
-Note that, in the example above, Tagref won't actually ensure that the `get_flobs` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
+Note that, in the example above, Tagref won't ensure that the `get_flobs` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
 
-Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration check. Tagref is fast and probably won't be the bottleneck in your CI.
+Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration check. Tagref is *blazing fast* (as they say) and almost certainly won't be the bottleneck in your CI.
 
 ## Usage
 
