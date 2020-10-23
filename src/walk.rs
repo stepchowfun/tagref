@@ -1,4 +1,4 @@
-use ignore::{WalkBuilder, WalkState};
+use ignore::{overrides::OverrideBuilder, WalkBuilder, WalkState};
 use std::{
     fs::File,
     path::{Path, PathBuf},
@@ -23,6 +23,15 @@ pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
         // Traverse the filesystem in parallel.
         WalkBuilder::new(path)
             .hidden(false)
+            .overrides(
+                OverrideBuilder::new("")
+                    .add("!.git/")
+                    .unwrap() // Safe by manual inspection
+                    .add("!.hg/")
+                    .unwrap() // Safe by manual inspection
+                    .build()
+                    .unwrap(),
+            )
             .build_parallel()
             .run(|| {
                 // These clones will be moved into the closure below, and that closure will be sent
