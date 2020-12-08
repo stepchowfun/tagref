@@ -23,6 +23,7 @@ pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
         // Traverse the filesystem in parallel.
         WalkBuilder::new(path)
             .hidden(false)
+            .require_git(false)
             .overrides(
                 OverrideBuilder::new("")
                     .add("!.git/")
