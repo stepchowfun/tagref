@@ -1,6 +1,6 @@
 # Tagref
 
-[![Build status](https://github.com/stepchowfun/tagref/workflows/Continuous%20integration/badge.svg?branch=master)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amaster)
+[![Build status](https://github.com/stepchowfun/tagref/workflows/Continuous%20integration/badge.svg?branch=main)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amain)
 
 When writing code, it's common to refer to other parts of the codebase in comments. The traditional way to do that is to provide a file path and a line number, for example:
 
@@ -77,7 +77,7 @@ SUBCOMMANDS:
 If you are running macOS or a GNU-based Linux on an x86-64 CPU, you can install Tagref with this command:
 
 ```sh
-curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | sh
+curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs | sh
 ```
 
 The same command can be used again to update Tagref to the latest version.
@@ -94,7 +94,7 @@ The installation script supports the following environment variables:
 For example, the following will install Tagref into the working directory:
 
 ```sh
-curl https://raw.githubusercontent.com/stepchowfun/tagref/master/install.sh -LSfs | PREFIX=. sh
+curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs | PREFIX=. sh
 ```
 
 ### Manual installation
