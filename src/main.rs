@@ -1,3 +1,5 @@
+#![deny(warnings)]
+
 mod count;
 mod duplicates;
 mod label;
