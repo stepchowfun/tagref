@@ -101,6 +101,9 @@ tasks:
       set -euo pipefail
       . $HOME/.cargo/env
 
+      # This is sometimes needed to force Clippy to actually run.
+      cargo clean --package tagref
+
       # Lint Rust files.
       cargo clippy --all-targets --all-features -- \
         --deny warnings --deny clippy::all --deny clippy::pedantic
