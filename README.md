@@ -71,7 +71,6 @@ OPTIONS:
     -v, --version
             Prints version information
 
-
 SUBCOMMANDS:
     check
             Checks all the tags and references (default)
