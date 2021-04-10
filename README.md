@@ -56,18 +56,37 @@ USAGE:
     tagref [SUBCOMMAND]
 
 OPTIONS:
-    -h, --help                       Prints help information
-    -p, --path <PATH>...             Adds the path of a directory to scan [default: .]
-    -r, --ref-prefix <REF_PREFIX>    Sets the prefix used for locating references [default: ref]
-    -t, --tag-prefix <TAG_PREFIX>    Sets the prefix used for locating tags [default: tag]
-    -v, --version                    Prints version information
+    -h, --help
+            Prints help information
+
+    -p, --path <PATH>...
+            Adds the path of a directory to scan [default: .]
+
+    -r, --ref-prefix <REF_PREFIX>
+            Sets the prefix used for locating references [default: ref]
+
+    -t, --tag-prefix <TAG_PREFIX>
+            Sets the prefix used for locating tags [default: tag]
+
+    -v, --version
+            Prints version information
+
 
 SUBCOMMANDS:
-    check          Checks all the tags and references (default)
-    help           Prints this message or the help of the given subcommand(s)
-    list-refs      Lists all the references
-    list-tags      Lists all the tags
-    list-unused    Lists the unreferenced tags
+    check
+            Checks all the tags and references (default)
+
+    help
+            Prints this message or the help of the given subcommand(s)
+
+    list-refs
+            Lists all the references
+
+    list-tags
+            Lists all the tags
+
+    list-unused
+            Lists the unreferenced tags
 ```
 
 ## Installation
