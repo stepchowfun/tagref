@@ -22,10 +22,10 @@ use std::{
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // Command-line option and subcommand names
-const CHECK_COMMAND: &str = "check";
-const LIST_REFS_COMMAND: &str = "list-refs";
-const LIST_TAGS_COMMAND: &str = "list-tags";
-const LIST_UNUSED_COMMAND: &str = "list-unused";
+const CHECK_SUBCOMMAND: &str = "check";
+const LIST_REFS_SUBCOMMAND: &str = "list-refs";
+const LIST_TAGS_SUBCOMMAND: &str = "list-tags";
+const LIST_UNUSED_SUBCOMMAND: &str = "list-unused";
 const PATH_OPTION: &str = "path";
 const TAG_PREFIX_OPTION: &str = "tag-prefix";
 const REF_PREFIX_OPTION: &str = "ref-prefix";
@@ -77,12 +77,14 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
                 .default_value("ref"), // [tag:ref_prefix_default] ,
         )
         .subcommand(
-            SubCommand::with_name(CHECK_COMMAND)
+            SubCommand::with_name(CHECK_SUBCOMMAND)
                 .about("Checks all the tags and references (default)"),
         )
-        .subcommand(SubCommand::with_name(LIST_TAGS_COMMAND).about("Lists all the tags"))
-        .subcommand(SubCommand::with_name(LIST_UNUSED_COMMAND).about("Lists the unreferenced tags"))
-        .subcommand(SubCommand::with_name(LIST_REFS_COMMAND).about("Lists all the references"))
+        .subcommand(SubCommand::with_name(LIST_TAGS_SUBCOMMAND).about("Lists all the tags"))
+        .subcommand(
+            SubCommand::with_name(LIST_UNUSED_SUBCOMMAND).about("Lists the unreferenced tags"),
+        )
+        .subcommand(SubCommand::with_name(LIST_REFS_SUBCOMMAND).about("Lists all the references"))
         .get_matches();
 
     // Determine which paths to scan. The `unwrap` is safe due to [ref:path_default].
@@ -125,7 +127,7 @@ fn entry() -> Result<(), String> {
 
     // Decide what to do based on the subcommand.
     match matches.subcommand_name() {
-        Some(LIST_TAGS_COMMAND) => {
+        Some(LIST_TAGS_SUBCOMMAND) => {
             // Parse and print all the tags.
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
@@ -142,7 +144,7 @@ fn entry() -> Result<(), String> {
             });
         }
 
-        Some(LIST_REFS_COMMAND) => {
+        Some(LIST_REFS_SUBCOMMAND) => {
             // Parse and print all the references.
             let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
@@ -159,7 +161,7 @@ fn entry() -> Result<(), String> {
             });
         }
 
-        Some(LIST_UNUSED_COMMAND) => {
+        Some(LIST_UNUSED_SUBCOMMAND) => {
             // Store the tags into a `HashMap`. The values are `Vec`s to allow for duplicates.
             let tags_map = Arc::new(Mutex::new(HashMap::new()));
 
@@ -209,7 +211,7 @@ fn entry() -> Result<(), String> {
             }
         }
 
-        Some(CHECK_COMMAND) | None => {
+        Some(CHECK_SUBCOMMAND) | None => {
             // Parse all the tags into a `HashMap`. The values are `Vec`s to allow for duplicates.
             // We'll report duplicates later.
             let tags = Arc::new(Mutex::new(HashMap::new()));
