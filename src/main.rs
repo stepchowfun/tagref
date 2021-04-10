@@ -49,6 +49,7 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
             .trim(),
         )
         .setting(AppSettings::ColoredHelp)
+        .setting(AppSettings::NextLineHelp)
         .setting(AppSettings::UnifiedHelpMessage)
         .setting(AppSettings::VersionlessSubcommands)
         .arg(
