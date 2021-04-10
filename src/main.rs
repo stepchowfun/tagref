@@ -53,26 +53,26 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
         .setting(AppSettings::VersionlessSubcommands)
         .arg(
             Arg::with_name(PATH_OPTION)
+                .value_name("PATH")
                 .short("p")
                 .long(PATH_OPTION)
-                .value_name("PATH")
                 .help("Adds the path of a directory to scan")
                 .default_value(".") // [tag:path_default]
                 .multiple(true),
         )
         .arg(
             Arg::with_name(TAG_PREFIX_OPTION)
+                .value_name("TAG_PREFIX")
                 .short("t")
                 .long(TAG_PREFIX_OPTION)
-                .value_name("TAG_PREFIX")
                 .help("Sets the prefix used for locating tags")
                 .default_value("tag"), // [tag:tag_prefix_default] ,
         )
         .arg(
             Arg::with_name(REF_PREFIX_OPTION)
+                .value_name("REF_PREFIX")
                 .short("r")
                 .long(REF_PREFIX_OPTION)
-                .value_name("REF_PREFIX")
                 .help("Sets the prefix used for locating references")
                 .default_value("ref"), // [tag:ref_prefix_default] ,
         )
