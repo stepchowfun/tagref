@@ -15,7 +15,6 @@ Unfortunately, as we all know, this is brittle:
 
 One solution is to reference a specific commit, in addition to the file path and line number. At least then you know the reader will be able to find the line that you're referencing.
 
-
 ```python
 # Keep this in sync with controllers/home/profile.py@55217c6:304.
 ```
@@ -46,6 +45,8 @@ Tagref ensures such references remain valid. If someone tries to delete or renam
 Note that, in the example above, Tagref won't ensure that the `get_flobs` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
 
 Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration check. Tagref is *blazing fast* (as they say) and almost certainly won't be the bottleneck in your CI.
+
+Tagref is used extensively to manage invariants in Airbnb's front-end codebase.
 
 ## Usage
 
