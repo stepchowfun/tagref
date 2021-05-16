@@ -46,7 +46,7 @@ mod tests {
                 assert!(tags.is_empty());
             }
             Err(error) => {
-                panic!(error);
+                panic!("{}", error);
             }
         };
     }
@@ -77,7 +77,7 @@ mod tests {
                 assert_eq!(tags.len(), 2);
             }
             Err(error) => {
-                panic!(error);
+                panic!("{}", error);
             }
         };
     }

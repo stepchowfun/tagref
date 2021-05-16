@@ -35,7 +35,7 @@ mod tests {
         let refs = vec![];
 
         if let Err(error) = check(&tags, &refs) {
-            panic!(error);
+            panic!("{}", error);
         };
     }
 
@@ -60,7 +60,7 @@ mod tests {
         }];
 
         if let Err(error) = check(&tags, &refs) {
-            panic!(error);
+            panic!("{}", error);
         };
     }
 
