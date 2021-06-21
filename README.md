@@ -89,11 +89,11 @@ SUBCOMMANDS:
             Lists the unreferenced tags
 ```
 
-## Installation
+## Installation instructions
 
-### Easy installation
+### Easy installation on macOS or Linux
 
-If you are running macOS or a GNU-based Linux on an x86-64 CPU, you can install Tagref with this command:
+If you are running macOS or Linux on an x86-64 CPU, you can install Tagref with this command:
 
 ```sh
 curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs | sh
@@ -101,7 +101,7 @@ curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs 
 
 The same command can be used again to update Tagref to the latest version.
 
-**NOTE:** Piping `curl` to `sh` is dangerous since the server might be compromised. If you're concerned about this, you can download and inspect the installation script or choose one of the other installation methods.
+**NOTE:** Piping `curl` to `sh` is considered dangerous by some since the server might be compromised. If you're concerned about this, you can download and inspect the installation script or choose one of the other installation methods.
 
 #### Customizing the installation
 
@@ -116,9 +116,9 @@ For example, the following will install Tagref into the working directory:
 curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs | PREFIX=. sh
 ```
 
-### Manual installation
+### Manual installation for macOS, Linux, or Windows
 
-The [releases page](https://github.com/stepchowfun/tagref/releases) has precompiled binaries for macOS or Linux systems running on an x86-64 CPU. You can download one of them and place it in a directory listed in your [`PATH`](https://en.wikipedia.org/wiki/PATH_\(variable\)).
+The [releases page](https://github.com/stepchowfun/tagref/releases) has precompiled binaries for macOS, Linux, and Windows systems running on an x86-64 CPU. You can download one of them and place it in a directory listed in your [`PATH`](https://en.wikipedia.org/wiki/PATH_\(variable\)).
 
 ### Installation with Cargo
 
