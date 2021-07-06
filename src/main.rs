@@ -67,7 +67,7 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
                 .short("t")
                 .long(TAG_PREFIX_OPTION)
                 .help("Sets the prefix used for locating tags")
-                .default_value("tag"), // [tag:tag_prefix_default] ,
+                .default_value("tag"), // [tag:tag_prefix_default]
         )
         .arg(
             Arg::with_name(REF_PREFIX_OPTION)
@@ -75,7 +75,7 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
                 .short("r")
                 .long(REF_PREFIX_OPTION)
                 .help("Sets the prefix used for locating references")
-                .default_value("ref"), // [tag:ref_prefix_default] ,
+                .default_value("ref"), // [tag:ref_prefix_default]
         )
         .subcommand(
             SubCommand::with_name(CHECK_SUBCOMMAND)
