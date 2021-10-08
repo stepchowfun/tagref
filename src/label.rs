@@ -1,8 +1,10 @@
-use regex::Regex;
-use std::{
-    fmt,
-    io::BufRead,
-    path::{Path, PathBuf},
+use {
+    regex::Regex,
+    std::{
+        fmt,
+        io::BufRead,
+        path::{Path, PathBuf},
+    },
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -71,9 +73,11 @@ pub fn parse<R: BufRead>(
 
 #[cfg(test)]
 mod tests {
-    use crate::label::{parse, Type};
-    use regex::Regex;
-    use std::path::Path;
+    use {
+        crate::label::{parse, Type},
+        regex::Regex,
+        std::path::Path,
+    };
 
     const TAG_REGEX: &str = "(?i)\\[\\s*tag\\s*:\\s*([^\\]\\s]*)\\s*\\]";
     const REF_REGEX: &str = "(?i)\\[\\s*ref\\s*:\\s*([^\\]\\s]*)\\s*\\]";

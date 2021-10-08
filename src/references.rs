@@ -1,5 +1,4 @@
-use crate::label::Label;
-use std::collections::HashMap;
+use {crate::label::Label, std::collections::HashMap};
 
 // This function checks that references actually point to tags. If a missing tag is encountered, an
 // error message is returned.
@@ -23,11 +22,13 @@ pub fn check(tags: &HashMap<String, Label>, refs: &[Label]) -> Result<(), String
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        label::{Label, Type},
-        references::check,
+    use {
+        crate::{
+            label::{Label, Type},
+            references::check,
+        },
+        std::{collections::HashMap, path::Path},
     };
-    use std::{collections::HashMap, path::Path};
 
     #[test]
     fn check_empty() {

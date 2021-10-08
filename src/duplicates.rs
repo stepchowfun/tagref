@@ -1,5 +1,4 @@
-use crate::label::Label;
-use std::collections::HashMap;
+use {crate::label::Label, std::collections::HashMap};
 
 // This function checks that all the vectors in `tags_map` have a single element. It returns a map
 // from label to tag.
@@ -32,11 +31,13 @@ pub fn check(tags_map: &HashMap<String, Vec<Label>>) -> Result<HashMap<String, L
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        duplicates::check,
-        label::{Label, Type},
+    use {
+        crate::{
+            duplicates::check,
+            label::{Label, Type},
+        },
+        std::{collections::HashMap, path::Path},
     };
-    use std::{collections::HashMap, path::Path};
 
     #[test]
     fn check_empty() {

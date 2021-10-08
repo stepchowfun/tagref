@@ -6,16 +6,18 @@ mod label;
 mod references;
 mod walk;
 
-use atty::Stream;
-use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
-use colored::Colorize;
-use regex::{escape, Regex};
-use std::{
-    collections::HashMap,
-    io::BufReader,
-    path::{Path, PathBuf},
-    process::exit,
-    sync::{Arc, Mutex},
+use {
+    atty::Stream,
+    clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
+    colored::Colorize,
+    regex::{escape, Regex},
+    std::{
+        collections::HashMap,
+        io::BufReader,
+        path::{Path, PathBuf},
+        process::exit,
+        sync::{Arc, Mutex},
+    },
 };
 
 // The program version
