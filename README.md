@@ -24,7 +24,7 @@ But that solution isn't ideal, because then the reader has to manually sift thro
 *Tagref* solves this problem in a better way. It allows you to annotate your code with "tags" (in comments), which can be referenced from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
-# This function always returns a non-empty list. [tag:flobs_nonempty]
+# [tag:flobs_nonempty] This function always returns a non-empty list.
 def get_flobs():
   return ['hello', 'world']
 ```

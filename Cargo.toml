@@ -2,7 +2,7 @@
 name = "tagref"
 version = "1.5.0"
 authors = ["Stephan Boyer <stephan@stephanboyer.com>"]
-edition = "2018"
+edition = "2021"
 description = "Tagref helps you refer to other locations in your codebase."
 license = "MIT"
 documentation = "https://github.com/stepchowfun/tagref"
