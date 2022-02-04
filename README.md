@@ -2,39 +2,43 @@
 
 [![Build status](https://github.com/stepchowfun/tagref/workflows/Continuous%20integration/badge.svg?branch=main)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amain)
 
-When writing code, it's common to refer to other parts of the codebase in comments. The traditional way to do that is to provide a file path and a line number, for example:
+Tagref helps you maintain cross-references in your code. You can use it to help keep things in sync, document assumptions, manage invariants, etc. Airbnb uses it extensively in their front-end monorepo. You should use it too!
+
+## What is it?
+
+When writing code, it's common to refer to other parts of the codebase in comments. The traditional way to do that is to provide a file path and a line number. For example:
 
 ```python
-# Keep this in sync with controllers/home/profile.py:304.
+# Keep this in sync with controllers/profile.py:304.
 ```
 
 Unfortunately, as we all know, this is brittle:
 
-1. As the file evolves, the line numbers may shift.
+1. As the code evolves, the line numbers may shift.
 2. The file might be renamed or deleted.
 
-One solution is to reference a specific commit, in addition to the file path and line number. At least then you know the reader will be able to find the line that you're referencing.
+One strategy is to reference a specific commit. At least then you know the reader will be able to find the line that you're referencing:
 
 ```python
-# Keep this in sync with controllers/home/profile.py@55217c6:304.
+# Keep this in sync with controllers/profile.py@55217c6:304.
 ```
 
-But that solution isn't ideal, because then the reader has to manually sift through the code history to find the corresponding line in the current version of the code, which may have diverged from the referenced commit in non-trivial ways.
+But that approach isn't ideal, since the current version of the code may have diverged from the referenced commit in non-trivial ways.
 
 *Tagref* solves this problem in a better way. It allows you to annotate your code with "tags" (in comments), which can be referenced from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
-# [tag:flobs_nonempty] This function always returns a non-empty list.
-def get_flobs():
-  return ['hello', 'world']
+# [tag:cities_nonempty] This function always returns a non-empty list.
+def get_cities():
+  return ['San Francisco', 'Tokyo']
 ```
 
-Elsewhere, suppose you're writing some code which depends on that postcondition. You can make this clear by referencing the tag:
+Elsewhere, suppose you're writing some code which depends on that postcondition. You can make that clear by referencing the tag:
 
 ```python
-flobs = get_flobs()
+cities = get_cities()
 
-first_flob = flobs[0] # This is safe due to [ref:flobs_nonempty].
+first_city = cities[0] # This is safe due to [ref:cities_nonempty].
 ```
 
 Tagref ensures such references remain valid. If someone tries to delete or rename the tag, Tagref will complain. More precisely, it checks the following:
@@ -42,15 +46,13 @@ Tagref ensures such references remain valid. If someone tries to delete or renam
 1. References actually point to tags. A tag cannot be deleted or renamed without updating the references that point to it.
 2. Tags are distinct. There is never any ambiguity about which tag is being referenced.
 
-Note that, in the example above, Tagref won't ensure that the `get_flobs` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
+Note that, in the example above, Tagref won't ensure that the `get_cities` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
 
 Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration check. Tagref is *blazing fast* (as they say) and almost certainly won't be the bottleneck in your CI.
 
-Tagref is used extensively to manage invariants in Airbnb's front-end codebase.
-
 ## Usage
 
-The easiest way to use Tagref is to run the `tagref` command with no arguments. It will scan the working directory and check the two conditions described above. Here are the supported command-line options:
+The easiest way to use Tagref is to run the `tagref` command with no arguments. It will recursively scan the working directory and check the two conditions described above. Here are the supported command-line options:
 
 ```
 USAGE:
