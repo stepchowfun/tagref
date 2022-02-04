@@ -25,7 +25,7 @@ One strategy is to reference a specific commit. At least then you know the reade
 
 But that approach isn't ideal, since the current version of the code may have diverged from the referenced commit in non-trivial ways.
 
-*Tagref* solves this problem in a better way. It allows you to annotate your code with "tags" (in comments), which can be referenced from other parts of the codebase. For example, you might have a tag like this:
+*Tagref* solves this problem in a better way. It allows you to annotate your code with *tags* (in comments), which can be referenced from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
 # [tag:cities_nonempty] This function always returns a non-empty list.
