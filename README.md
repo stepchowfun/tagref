@@ -2,7 +2,7 @@
 
 [![Build status](https://github.com/stepchowfun/tagref/workflows/Continuous%20integration/badge.svg?branch=main)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amain)
 
-Tagref helps you maintain cross-references in your code. You can use it to help keep things in sync, document assumptions, manage invariants, etc. Airbnb uses it in their front-end monorepo. You should use it too!
+Tagref helps you maintain cross-references in your code. You can use it to help keep things in sync, document assumptions, manage invariants, etc. Airbnb uses it for their front-end monorepo. You should use it too!
 
 ## What is it?
 
