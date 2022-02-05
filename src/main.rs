@@ -41,9 +41,9 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
         .author("Stephan Boyer <stephan@stephanboyer.com>")
         .about(
             " \
-             Tagref helps you refer to other locations in your codebase. It checks \
+             Tagref helps you maintain cross-references in your code. It checks \
              the following:\n\n1. References actually point to tags. \n2. Tags are \
-             distinct.\n\nThe syntax for tags is [tag:?label?] and the syntax for \
+             unique.\n\nThe syntax for tags is [tag:?label?] and the syntax for \
              references is [ref:?label?]. For more information, visit \
              https://github.com/stepchowfun/tagref. \
              "
