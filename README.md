@@ -122,6 +122,16 @@ If you're running Windows on an x86-64 CPU, download the latest binary from the 
 
 To update to an existing installation, simply replace the existing binary.
 
+### Installation with Homebrew
+
+If you have [Homebrew](https://brew.sh/), you can install Tagref as follows:
+
+```sh
+brew install tagref
+```
+
+You can update an existing installation with `brew upgrade tagref`.
+
 ### Installation with Cargo
 
 If you have [Cargo](https://doc.rust-lang.org/cargo/), you can install Tagref as follows:
