@@ -4,6 +4,8 @@
 
 Tagref helps you maintain cross-references in your code. You can use it to help keep things in sync, document assumptions, manage invariants, etc. Airbnb uses it for their front-end monorepo. You should use it too!
 
+Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration (CI) check. Tagref is *blazing fast* (as they say) and almost certainly won't be the bottleneck in your CI.
+
 ## What is it?
 
 When writing code, it's common to refer to other parts of the codebase in comments. The traditional way to do that is to provide a file path and a line number. For example:
@@ -47,8 +49,6 @@ Tagref ensures such references remain valid. If someone tries to delete or renam
 2. Tags are unique. There is never any ambiguity about which tag is being referenced.
 
 Note that, in the example above, Tagref won't ensure that the `get_cities` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
-
-Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration check. Tagref is *blazing fast* (as they say) and almost certainly won't be the bottleneck in your CI.
 
 ## Usage
 
