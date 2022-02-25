@@ -47,7 +47,7 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
              references is [ref:?label?]. For more information, visit \
              https://github.com/stepchowfun/tagref. \
              "
-            .replace("?", "") // The '?'s are to avoid tag conflicts.
+            .replace('?', "") // The '?'s are to avoid tag conflicts.
             .trim(),
         )
         .setting(AppSettings::ColoredHelp)
