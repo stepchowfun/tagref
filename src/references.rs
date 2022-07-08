@@ -1,4 +1,7 @@
-use {crate::label::Label, std::collections::HashMap};
+use {
+    crate::label::Label,
+    std::{collections::HashMap, fmt::Write},
+};
 
 // This function checks that references actually point to tags. If a missing tag is encountered, an
 // error message is returned.
@@ -9,7 +12,7 @@ pub fn check(tags: &HashMap<String, Label>, refs: &[Label]) -> Result<(), String
     for r#ref in refs {
         if !tags.contains_key(&r#ref.label) {
             missing_tags = true;
-            error.push_str(&format!("No tag found for {}.\n", r#ref));
+            let _ = write!(error, "No tag found for {}.\n", r#ref);
         }
     }
 
