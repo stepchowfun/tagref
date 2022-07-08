@@ -1,4 +1,7 @@
-use {crate::label::Label, std::collections::HashMap};
+use {
+    crate::label::Label,
+    std::{collections::HashMap, fmt::Write},
+};
 
 // This function checks that all the vectors in `tags_map` have a single element. It returns a map
 // from label to tag.
@@ -10,10 +13,10 @@ pub fn check(tags_map: &HashMap<String, Vec<Label>>) -> Result<HashMap<String, L
     for (label, tags) in tags_map {
         if tags.len() > 1 {
             dupes_found = true;
-            error.push_str(&format!("Duplicate tags found for label `{}`:\n", label));
+            let _ = write!(error, "Duplicate tags found for label `{}`:\n", label);
 
             for tag in tags {
-                error.push_str(&format!("  {}\n", tag));
+                let _ = write!(error, "  {}\n", tag);
             }
         }
 
