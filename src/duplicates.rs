@@ -13,10 +13,10 @@ pub fn check(tags_map: &HashMap<String, Vec<Label>>) -> Result<HashMap<String, L
     for (label, tags) in tags_map {
         if tags.len() > 1 {
             dupes_found = true;
-            let _ = write!(error, "Duplicate tags found for label `{}`:\n", label);
+            let _ = writeln!(error, "Duplicate tags found for label `{label}`:");
 
             for tag in tags {
-                let _ = write!(error, "  {}\n", tag);
+                let _ = writeln!(error, "  {tag}");
             }
         }
 
