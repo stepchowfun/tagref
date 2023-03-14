@@ -12,7 +12,7 @@ pub fn check(tags: &HashMap<String, Label>, refs: &[Label]) -> Result<(), String
     for r#ref in refs {
         if !tags.contains_key(&r#ref.label) {
             missing_tags = true;
-            let _ = write!(error, "No tag found for {}.\n", r#ref);
+            let _ = writeln!(error, "No tag found for {ref}.");
         }
     }
 

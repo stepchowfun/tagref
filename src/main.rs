@@ -142,7 +142,7 @@ fn entry() -> Result<(), String> {
                     BufReader::new(file),
                 ) {
                     let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
-                    println!("{}", tag);
+                    println!("{tag}");
                 }
             });
         }
@@ -159,7 +159,7 @@ fn entry() -> Result<(), String> {
                     BufReader::new(file),
                 ) {
                     let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
-                    println!("{}", r#ref);
+                    println!("{ref}");
                 }
             });
         }
@@ -209,7 +209,7 @@ fn entry() -> Result<(), String> {
             // Print the remaining tags. The `unwrap` is safe assuming no poisoning.
             for tags in tags_map.lock().unwrap().values() {
                 for tag in tags {
-                    println!("{}", tag);
+                    println!("{tag}");
                 }
             }
         }
