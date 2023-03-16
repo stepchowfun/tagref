@@ -9,10 +9,11 @@ mod walk;
 use {
     atty::Stream,
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
-    colonnade::{Alignment, Colonnade},
+    colonnade::Colonnade,
     colored::Colorize,
     regex::{escape, Regex},
     std::{
+        cmp::max,
         collections::HashMap,
         io::BufReader,
         path::{Path, PathBuf},
@@ -108,27 +109,20 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
     (matches, paths, tag_prefix, ref_prefix)
 }
 
-// Print data in two tabulated columns
+// Print data in two tabulated columns.
 fn print_tabulated(data: Vec<[String; 2]>) {
-    // Find terminal width. If output is not a tty (i.e. an interactive terminal) use the
-    // traditional 80 column width.
-    let terminal_width = term_size::dimensions_stdout().map_or(80, |(_height, width)| width);
+    // Set the viewport width to the terminal width if STDOUT is a TTY, or 80 otherwise. We ensure
+    // the width is at least 3 to ensure there is enough room for 2 columns with a 1-space margin
+    // between them [tag:min_terminal_width].
+    let terminal_width = max(
+        term_size::dimensions_stdout().map_or(80, |(_height, width)| width),
+        3,
+    );
 
-    // Create a 2-column table of 80 characters length.
-    // it returns Err(_) when the viewport is not wide enough for the columns and their
-    // margins, so the unwrap() here is safe
+    // Create a 2-column table. The `unwrap` is safe due to [ref:min_terminal_width].
     let mut colonnade = Colonnade::new(2, terminal_width).unwrap();
 
-    colonnade.columns[0].alignment(Alignment::Left);
-    colonnade.columns[1].alignment(Alignment::Left);
-
-    // tabulate() returns Err(_) when:
-    //
-    // - input data is inconsistent with configured columns e.g. three items per row with two
-    //   columns.
-    // - insufficient space when minimum widths are configured, which we didn't do.
-    //
-    // So the unwrap() here is safe.
+    // The `unwrap` is safe by manual inspection of the types of errors that can be thrown.
     for line in colonnade.tabulate(data).unwrap() {
         println!("{line}");
     }
@@ -160,9 +154,9 @@ fn entry() -> Result<(), String> {
         Some(LIST_TAGS_SUBCOMMAND) => {
             // Parse and print all the tags.
             let tags = Arc::new(Mutex::new(vec![]));
-            let tags_copy = tags.clone();
+            let tags_clone = tags.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
-                let tags = tags_copy.clone();
+                let tags = tags_clone.clone();
                 let mut results = vec![];
                 for tag in label::parse(
                     &tag_regex,
@@ -176,24 +170,24 @@ fn entry() -> Result<(), String> {
                         format!("{}:{}", tag.path.display(), tag.line_number),
                     ]);
                 }
-                tags.lock().unwrap().extend(results.drain(..));
+                tags.lock().unwrap().extend(results.drain(..)); // Safe assuming no poisoning
             });
 
             // Safe assuming no poisoning
             let mut tags: Vec<[String; 2]> = std::mem::take(&mut tags.lock().unwrap());
-            tags.sort();
 
+            tags.sort();
             print_tabulated(tags);
         }
 
         Some(LIST_REFS_SUBCOMMAND) => {
             // Parse and print all the references.
             let references = Arc::new(Mutex::new(vec![]));
-            let references_copy = references.clone();
+            let references_clone = references.clone();
             let _ = walk::walk(&paths, move |file_path, file| {
-                let references = references_copy.clone();
+                let references = references_clone.clone();
                 let mut results = vec![];
-                for label in label::parse(
+                for r#ref in label::parse(
                     &tag_regex,
                     &ref_regex,
                     label::Type::Ref,
@@ -201,8 +195,8 @@ fn entry() -> Result<(), String> {
                     BufReader::new(file),
                 ) {
                     results.push([
-                        label.label,
-                        format!("{}:{}", label.path.display(), label.line_number),
+                        r#ref.label,
+                        format!("{}:{}", r#ref.path.display(), r#ref.line_number),
                     ]);
                 }
                 references.lock().unwrap().extend(results.drain(..)); // Safe assuming no poisoning
@@ -210,8 +204,8 @@ fn entry() -> Result<(), String> {
 
             // Safe assuming no poisoning
             let mut references: Vec<[String; 2]> = std::mem::take(&mut references.lock().unwrap());
-            references.sort();
 
+            references.sort();
             print_tabulated(references);
         }
 
@@ -257,22 +251,21 @@ fn entry() -> Result<(), String> {
                 }
             });
 
-            // Get the remaining tags. The `unwrap` is safe assuming no poisoning.
+            // Print the remaining tags. The `unwrap` is safe assuming no poisoning.
             let mut references: Vec<[String; 2]> = tags_map
                 .lock()
                 .unwrap()
-                .values_mut()
+                .values()
                 .flat_map(|tags| {
-                    tags.iter_mut().map(|tag| {
+                    tags.iter().map(|tag| {
                         [
-                            std::mem::take(&mut tag.label),
+                            tag.label.clone(),
                             format!("{}:{}", tag.path.display(), tag.line_number),
                         ]
                     })
                 })
                 .collect();
             references.sort();
-
             print_tabulated(references);
         }
 
