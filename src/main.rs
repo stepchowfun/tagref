@@ -13,7 +13,7 @@ use {
     colored::Colorize,
     regex::{escape, Regex},
     std::{
-        cmp::max,
+        cmp::{max, min},
         collections::HashMap,
         io::BufReader,
         path::{Path, PathBuf},
@@ -110,17 +110,24 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
 }
 
 // Print data in two tabulated columns.
-fn print_tabulated(data: Vec<[String; 2]>) {
+fn print_tabulated(data: Vec<[String; 3]>) {
     // Set the viewport width to the terminal width if STDOUT is a TTY, or 80 otherwise. We ensure
-    // the width is at least 3 to ensure there is enough room for 2 columns with a 1-space margin
+    // the width is at least 3 to ensure there is enough room for 3 columns with a 1-space margin
     // between them [tag:min_terminal_width].
     let terminal_width = max(
         term_size::dimensions_stdout().map_or(80, |(width, _height)| width),
-        3,
+        4,
     );
 
-    // Create a 2-column table. The `unwrap` is safe due to [ref:min_terminal_width].
-    let mut colonnade = Colonnade::new(2, terminal_width).unwrap();
+    // Create a 3-column table. The `unwrap` is safe due to [ref:min_terminal_width].
+    let mut colonnade = Colonnade::new(3, terminal_width).unwrap();
+
+    colonnade.columns[1]
+        .max_width(min(
+            data.iter().map(|arr| arr[1].len()).max().unwrap_or(0),
+            45,
+        ))
+        .unwrap();
 
     // The `unwrap` is safe by manual inspection of the types of errors that can be thrown.
     for line in colonnade.tabulate(data).unwrap() {
@@ -139,12 +146,12 @@ fn entry() -> Result<(), String> {
 
     // Compile the regular expressions in advance.
     let tag_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]\\s*[.,:]*\\s*(.+$)?",
         escape(&tag_prefix),
     ))
     .unwrap();
     let ref_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]\\s*[.,:]*\\s*(.+$)?",
         escape(&ref_prefix),
     ))
     .unwrap();
@@ -167,6 +174,7 @@ fn entry() -> Result<(), String> {
                 ) {
                     results.push([
                         tag.label,
+                        tag.description,
                         format!("{}:{}", tag.path.display(), tag.line_number),
                     ]);
                 }
@@ -174,7 +182,7 @@ fn entry() -> Result<(), String> {
             });
 
             // Safe assuming no poisoning
-            let mut tags: Vec<[String; 2]> = std::mem::take(&mut tags.lock().unwrap());
+            let mut tags: Vec<[String; 3]> = std::mem::take(&mut tags.lock().unwrap());
 
             tags.sort();
             print_tabulated(tags);
@@ -196,6 +204,7 @@ fn entry() -> Result<(), String> {
                 ) {
                     results.push([
                         r#ref.label,
+                        r#ref.description,
                         format!("{}:{}", r#ref.path.display(), r#ref.line_number),
                     ]);
                 }
@@ -203,7 +212,7 @@ fn entry() -> Result<(), String> {
             });
 
             // Safe assuming no poisoning
-            let mut references: Vec<[String; 2]> = std::mem::take(&mut references.lock().unwrap());
+            let mut references: Vec<[String; 3]> = std::mem::take(&mut references.lock().unwrap());
 
             references.sort();
             print_tabulated(references);
@@ -252,7 +261,7 @@ fn entry() -> Result<(), String> {
             });
 
             // Print the remaining tags. The `unwrap` is safe assuming no poisoning.
-            let mut references: Vec<[String; 2]> = tags_map
+            let mut references: Vec<[String; 3]> = tags_map
                 .lock()
                 .unwrap()
                 .values()
@@ -260,6 +269,7 @@ fn entry() -> Result<(), String> {
                     tags.iter().map(|tag| {
                         [
                             tag.label.clone(),
+                            tag.description.clone(),
                             format!("{}:{}", tag.path.display(), tag.line_number),
                         ]
                     })

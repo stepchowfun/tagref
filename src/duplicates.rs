@@ -62,6 +62,7 @@ mod tests {
         let tags_vec1 = vec![Label {
             label_type: Type::Tag,
             label: "label1".to_owned(),
+            description: String::new(),
             path: Path::new("file1.rs").to_owned(),
             line_number: 1,
         }];
@@ -69,6 +70,7 @@ mod tests {
         let tags_vec2 = vec![Label {
             label_type: Type::Tag,
             label: "label2".to_owned(),
+            description: String::new(),
             path: Path::new("file2.rs").to_owned(),
             line_number: 2,
         }];
@@ -94,12 +96,14 @@ mod tests {
             Label {
                 label_type: Type::Tag,
                 label: "label".to_owned(),
+                description: String::new(),
                 path: Path::new("file1.rs").to_owned(),
                 line_number: 1,
             },
             Label {
                 label_type: Type::Tag,
                 label: "label".to_owned(),
+                description: String::new(),
                 path: Path::new("file2.rs").to_owned(),
                 line_number: 2,
             },

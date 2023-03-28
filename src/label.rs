@@ -30,6 +30,7 @@ impl fmt::Display for Type {
 pub struct Label {
     pub label_type: Type,
     pub label: String,
+    pub description: String,
     pub path: PathBuf,
     pub line_number: usize,
 }
@@ -71,6 +72,10 @@ pub fn parse<R: BufRead>(
                 labels.push(Label {
                     label_type,
                     label: captures.get(1).unwrap().as_str().to_owned(),
+                    description: captures
+                        .get(2)
+                        .map(|m| m.as_str().to_owned())
+                        .unwrap_or_default(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
                 });
