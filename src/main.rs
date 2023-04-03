@@ -115,7 +115,7 @@ fn print_tabulated(data: Vec<[String; 2]>) {
     // the width is at least 3 to ensure there is enough room for 2 columns with a 1-space margin
     // between them [tag:min_terminal_width].
     let terminal_width = max(
-        term_size::dimensions_stdout().map_or(80, |(_height, width)| width),
+        term_size::dimensions_stdout().map_or(80, |(width, _height)| width),
         3,
     );
 
