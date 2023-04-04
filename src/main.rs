@@ -9,11 +9,9 @@ mod walk;
 use {
     atty::Stream,
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
-    colonnade::Colonnade,
     colored::Colorize,
     regex::{escape, Regex},
     std::{
-        cmp::max,
         collections::HashMap,
         io::BufReader,
         path::{Path, PathBuf},
@@ -109,25 +107,6 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
     (matches, paths, tag_prefix, ref_prefix)
 }
 
-// Print data in two tabulated columns.
-fn print_tabulated(data: Vec<[String; 2]>) {
-    // Set the viewport width to the terminal width if STDOUT is a TTY, or 80 otherwise. We ensure
-    // the width is at least 3 to ensure there is enough room for 2 columns with a 1-space margin
-    // between them [tag:min_terminal_width].
-    let terminal_width = max(
-        term_size::dimensions_stdout().map_or(80, |(width, _height)| width),
-        3,
-    );
-
-    // Create a 2-column table. The `unwrap` is safe due to [ref:min_terminal_width].
-    let mut colonnade = Colonnade::new(2, terminal_width).unwrap();
-
-    // The `unwrap` is safe by manual inspection of the types of errors that can be thrown.
-    for line in colonnade.tabulate(data).unwrap() {
-        println!("{line}");
-    }
-}
-
 // Program entrypoint
 #[allow(clippy::too_many_lines)]
 fn entry() -> Result<(), String> {
@@ -153,11 +132,8 @@ fn entry() -> Result<(), String> {
     match matches.subcommand_name() {
         Some(LIST_TAGS_SUBCOMMAND) => {
             // Parse and print all the tags.
-            let tags = Arc::new(Mutex::new(vec![]));
-            let tags_clone = tags.clone();
+            let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
-                let tags = tags_clone.clone();
-                let mut results = vec![];
                 for tag in label::parse(
                     &tag_regex,
                     &ref_regex,
@@ -165,28 +141,16 @@ fn entry() -> Result<(), String> {
                     file_path,
                     BufReader::new(file),
                 ) {
-                    results.push([
-                        tag.label,
-                        format!("{}:{}", tag.path.display(), tag.line_number),
-                    ]);
+                    let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
+                    println!("{tag}");
                 }
-                tags.lock().unwrap().extend(results.drain(..)); // Safe assuming no poisoning
             });
-
-            // Safe assuming no poisoning
-            let mut tags: Vec<[String; 2]> = std::mem::take(&mut tags.lock().unwrap());
-
-            tags.sort();
-            print_tabulated(tags);
         }
 
         Some(LIST_REFS_SUBCOMMAND) => {
             // Parse and print all the references.
-            let references = Arc::new(Mutex::new(vec![]));
-            let references_clone = references.clone();
+            let mutex = Arc::new(Mutex::new(()));
             let _ = walk::walk(&paths, move |file_path, file| {
-                let references = references_clone.clone();
-                let mut results = vec![];
                 for r#ref in label::parse(
                     &tag_regex,
                     &ref_regex,
@@ -194,19 +158,10 @@ fn entry() -> Result<(), String> {
                     file_path,
                     BufReader::new(file),
                 ) {
-                    results.push([
-                        r#ref.label,
-                        format!("{}:{}", r#ref.path.display(), r#ref.line_number),
-                    ]);
+                    let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
+                    println!("{ref}");
                 }
-                references.lock().unwrap().extend(results.drain(..)); // Safe assuming no poisoning
             });
-
-            // Safe assuming no poisoning
-            let mut references: Vec<[String; 2]> = std::mem::take(&mut references.lock().unwrap());
-
-            references.sort();
-            print_tabulated(references);
         }
 
         Some(LIST_UNUSED_SUBCOMMAND) => {
@@ -252,21 +207,11 @@ fn entry() -> Result<(), String> {
             });
 
             // Print the remaining tags. The `unwrap` is safe assuming no poisoning.
-            let mut references: Vec<[String; 2]> = tags_map
-                .lock()
-                .unwrap()
-                .values()
-                .flat_map(|tags| {
-                    tags.iter().map(|tag| {
-                        [
-                            tag.label.clone(),
-                            format!("{}:{}", tag.path.display(), tag.line_number),
-                        ]
-                    })
-                })
-                .collect();
-            references.sort();
-            print_tabulated(references);
+            for tags in tags_map.lock().unwrap().values() {
+                for tag in tags {
+                    println!("{tag}");
+                }
+            }
         }
 
         Some(CHECK_SUBCOMMAND) | None => {

@@ -13,19 +13,6 @@ pub enum Type {
     Ref,
 }
 
-impl fmt::Display for Type {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Type::Tag => "tag",
-                Type::Ref => "ref",
-            },
-        )
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct Label {
     pub label_type: Type,
@@ -40,7 +27,10 @@ impl fmt::Display for Label {
         write!(
             f,
             "[{}:{}] @ {}:{}",
-            self.label_type,
+            match self.label_type {
+                Type::Tag => "tag",
+                Type::Ref => "ref",
+            },
             self.label,
             self.path.to_string_lossy(),
             self.line_number,
