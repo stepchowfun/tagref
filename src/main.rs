@@ -28,6 +28,7 @@ const CHECK_SUBCOMMAND: &str = "check";
 const LIST_REFS_SUBCOMMAND: &str = "list-refs";
 const LIST_TAGS_SUBCOMMAND: &str = "list-tags";
 const LIST_UNUSED_SUBCOMMAND: &str = "list-unused";
+const LIST_UNUSED_ERROR_OPTION: &str = "fail-if-any";
 const PATH_OPTION: &str = "path";
 const TAG_PREFIX_OPTION: &str = "tag-prefix";
 const REF_PREFIX_OPTION: &str = "ref-prefix";
@@ -85,7 +86,13 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
         )
         .subcommand(SubCommand::with_name(LIST_TAGS_SUBCOMMAND).about("Lists all the tags"))
         .subcommand(
-            SubCommand::with_name(LIST_UNUSED_SUBCOMMAND).about("Lists the unreferenced tags"),
+            SubCommand::with_name(LIST_UNUSED_SUBCOMMAND)
+                .about("Lists the unreferenced tags")
+                .arg(
+                    Arg::with_name(LIST_UNUSED_ERROR_OPTION)
+                        .long(LIST_UNUSED_ERROR_OPTION)
+                        .help("Exits with an error status code if any tags are unreferenced"),
+                ),
         )
         .subcommand(SubCommand::with_name(LIST_REFS_SUBCOMMAND).about("Lists all the references"))
         .get_matches();
@@ -211,6 +218,19 @@ fn entry() -> Result<(), String> {
                 for tag in tags {
                     println!("{tag}");
                 }
+            }
+            let error_flag_passed = matches
+                .subcommand
+                .unwrap() // Safe because we're _in_ a subcommand
+                .matches
+                .is_present(LIST_UNUSED_ERROR_OPTION);
+            // Error out if the error flag has been passed and there are unused tags.
+            // The `unwrap` is safe assuming no poisoning.
+            if error_flag_passed && !tags_map.lock().unwrap().is_empty() {
+                return Err(format!(
+                    "Found unused tags while using --{}",
+                    LIST_UNUSED_ERROR_OPTION,
+                ));
             }
         }
 
