@@ -14,7 +14,7 @@
   DESTINATION="${PREFIX:-/usr/local/bin}/tagref"
 
   # Which version to download
-  RELEASE="v${VERSION:-1.8.0}"
+  RELEASE="v${VERSION:-1.8.1}"
 
   # Determine which binary to download.
   FILENAME=''
@@ -28,6 +28,10 @@
   if uname -a | grep -qi 'Darwin.*x86_64'; then
     echo 'x86-64 macOS detected.'
     FILENAME=tagref-x86_64-apple-darwin
+  fi
+  if uname -a | grep -qi 'Darwin.*arm64'; then
+    echo 'AArch64 macOS detected.'
+    FILENAME=tagref-aarch64-apple-darwin
   fi
 
   # Find a temporary location for the binary.
