@@ -41,6 +41,17 @@ jobs:
         name: x86_64-unknown-linux-musl
         path: artifacts/tagref
         if-no-files-found: error
+    - run: |
+        # Make Bash not silently ignore errors.
+        set -euo pipefail
+
+        # The artifact name will contain the target triple, so the file name doesn't need to.
+        mv artifacts/tagref-aarch64-unknown-linux-gnu artifacts/tagref
+    - uses: actions/upload-artifact@v2
+      with:
+        name: aarch64-unknown-linux-gnu
+        path: artifacts/tagref
+        if-no-files-found: error
   ci-windows:
     name: Build for Windows
     runs-on: windows-latest
@@ -163,6 +174,9 @@ jobs:
           artifacts/x86_64-unknown-linux-musl/tagref \
           artifacts/tagref-x86_64-unknown-linux-musl
         mv \
+          artifacts/aarch64-unknown-linux-gnu/tagref \
+          artifacts/tagref-aarch64-unknown-linux-gnu
+        mv \
           artifacts/x86_64-apple-darwin/tagref \
           artifacts/tagref-x86_64-apple-darwin
         mv \
@@ -178,6 +192,7 @@ jobs:
           --message "v$VERSION" \
           --attach 'artifacts/tagref-x86_64-unknown-linux-gnu' \
           --attach 'artifacts/tagref-x86_64-unknown-linux-musl' \
+          --attach 'artifacts/tagref-aarch64-unknown-linux-gnu' \
           --attach 'artifacts/tagref-x86_64-apple-darwin' \
           --attach 'artifacts/tagref-aarch64-apple-darwin' \
           --attach 'artifacts/tagref-x86_64-pc-windows-msvc.exe' \
