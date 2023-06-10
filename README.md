@@ -4,11 +4,11 @@
 
 Tagref helps you maintain cross-references in your code. You can use it to help keep things in sync, document assumptions, manage invariants, etc. Airbnb uses it for their front-end monorepo. You should use it too!
 
-Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration (CI) check. Tagref is *blazing fast* (as they say) and almost certainly won't be the bottleneck in your CI.
+Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration (CI) check. Tagref is fast and almost certainly won't be the bottleneck in your CI.
 
 ## What is it?
 
-When writing code, it's common to refer to other parts of the codebase in comments. The traditional way to do that is to provide a file path and a line number. For example:
+When writing code, it's common to refer to other parts of the codebase in comments. A fragile way to do that is to mention a file path and a line number. For example:
 
 ```python
 # Keep this in sync with controllers/profile.py:304.
@@ -16,10 +16,10 @@ When writing code, it's common to refer to other parts of the codebase in commen
 
 Unfortunately, as we all know, this is brittle:
 
-1. As the code evolves, the line numbers may shift.
-2. The file might be renamed or deleted.
+1. The file might be renamed or deleted.
+2. As the code evolves, the line numbers may shift.
 
-One strategy is to reference a specific commit. At least then you know the reader will be able to find the line that you're referencing:
+A more robust strategy is to reference a specific commit. At least then you know the reader will be able to find the line that you're referencing:
 
 ```python
 # Keep this in sync with controllers/profile.py@55217c6:304.
