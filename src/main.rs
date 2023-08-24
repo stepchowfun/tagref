@@ -228,8 +228,7 @@ fn entry() -> Result<(), String> {
             // The `unwrap` is safe assuming no poisoning.
             if error_flag_passed && !tags_map.lock().unwrap().is_empty() {
                 return Err(format!(
-                    "Found unused tags while using --{}",
-                    LIST_UNUSED_ERROR_OPTION,
+                    "Found unused tags while using --{LIST_UNUSED_ERROR_OPTION}",
                 ));
             }
         }
