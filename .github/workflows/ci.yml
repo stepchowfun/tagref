@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - if: ${{ github.event_name == 'push' }}
-      uses: azure/docker-login@v1
+      uses: docker/login-action@v3
       with:
         username: stephanmisc
         password: ${{ secrets.DOCKER_PASSWORD }}
@@ -193,7 +193,7 @@ jobs:
         VERSION="$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
 
         # If the release already exists, exit early.
-        if hub release show "v$VERSION" &> /dev/null; then
+        if gh release view "v$VERSION" &> /dev/null; then
           echo "Release v$VERSION already exists."
           exit
         fi
@@ -225,18 +225,15 @@ jobs:
           artifacts/tagref-aarch64-pc-windows-msvc.exe
 
         # Create the release.
-        hub release create \
-          --commitish '${{ github.sha }}' \
-          --message "v$VERSION" \
-          --attach 'artifacts/tagref-x86_64-unknown-linux-gnu' \
-          --attach 'artifacts/tagref-x86_64-unknown-linux-musl' \
-          --attach 'artifacts/tagref-aarch64-unknown-linux-gnu' \
-          --attach 'artifacts/tagref-aarch64-unknown-linux-musl' \
-          --attach 'artifacts/tagref-x86_64-apple-darwin' \
-          --attach 'artifacts/tagref-aarch64-apple-darwin' \
-          --attach 'artifacts/tagref-x86_64-pc-windows-msvc.exe' \
-          --attach 'artifacts/tagref-aarch64-pc-windows-msvc.exe' \
-          "v$VERSION"
+        gh release create "v$VERSION" --title "v$VERSION" --notes '' \
+          'artifacts/tagref-x86_64-unknown-linux-gnu' \
+          'artifacts/tagref-x86_64-unknown-linux-musl' \
+          'artifacts/tagref-aarch64-unknown-linux-gnu' \
+          'artifacts/tagref-aarch64-unknown-linux-musl' \
+          'artifacts/tagref-x86_64-apple-darwin' \
+          'artifacts/tagref-aarch64-apple-darwin' \
+          'artifacts/tagref-x86_64-pc-windows-msvc.exe' \
+          'artifacts/tagref-aarch64-pc-windows-msvc.exe'
         echo "Created release v$VERSION."
     - uses: stepchowfun/toast/.github/actions/toast@main
       with:
