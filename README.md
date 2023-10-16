@@ -2,7 +2,7 @@
 
 [![Build status](https://github.com/stepchowfun/tagref/workflows/Continuous%20integration/badge.svg?branch=main)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amain)
 
-Tagref helps you maintain cross-references in your code. You can use it to help keep things in sync, document assumptions, manage invariants, etc. Airbnb uses it for their front-end monorepo. You can use it too!
+Tagref helps you manage cross-references in your code. You can use it to help keep things in sync, document assumptions, maintain invariants, etc. Airbnb uses it for their front-end monorepo. You can use it too!
 
 Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration (CI) check. Tagref is fast and almost certainly won't be the bottleneck in your CI.
 
@@ -14,25 +14,25 @@ When writing code, it's common to refer to other parts of the codebase in commen
 # Keep this in sync with controllers/profile.py:304.
 ```
 
-Unfortunately, as we all know, this is brittle:
+We all know how brittle this is:
 
-1. The file might be renamed or deleted.
+1. The referenced file might be renamed or deleted.
 2. As the code evolves, the line numbers may shift.
 
-A more robust strategy is to reference a specific commit. At least then you know the reader will be able to find the line that you're referencing:
+A more robust strategy is to mention a specific commit. At least then you know the reader will be able to find the line you're referencing:
 
 ```python
-# Keep this in sync with controllers/profile.py@55217c6:304.
+# Keep this in sync with controllers/profile.py:304 (as of commit 55217c6).
 ```
 
-But that approach isn't ideal, since the current version of the code may have diverged from the referenced commit in non-trivial ways.
+But that approach isn't ideal either, since the current version of the code may have diverged from the referenced commit in non-trivial ways.
 
 *Tagref* solves this problem in a better way. It allows you to annotate your code with *tags* (in comments), which can be referenced from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
 # [tag:cities_nonempty] This function always returns a non-empty list.
 def get_cities():
-  return ['San Francisco', 'Tokyo']
+    return ['San Francisco', 'Tokyo']
 ```
 
 Elsewhere, suppose you're writing some code which depends on that postcondition. You can make that clear by referencing the tag:
