@@ -8,26 +8,7 @@ Tagref works with any programming language, and it respects your `.gitignore` fi
 
 ## What is it?
 
-When writing code, it's common to refer to other parts of the codebase in comments. A fragile way to do that is to mention a file path and a line number. For example:
-
-```python
-# Keep this in sync with controllers/profile.py:304.
-```
-
-We all know how brittle this is:
-
-1. The referenced file might be renamed or deleted.
-2. As the code evolves, the line numbers may shift.
-
-A more robust strategy is to mention a specific commit. At least then you know the reader will be able to find the line you're referencing:
-
-```python
-# Keep this in sync with controllers/profile.py:304 (as of commit 55217c6).
-```
-
-But that approach isn't ideal either, since the current version of the code may have diverged from the referenced commit in non-trivial ways.
-
-*Tagref* solves this problem in a better way. It allows you to annotate your code with *tags* (in comments), which can be referenced from other parts of the codebase. For example, you might have a tag like this:
+*Tagref* allows you to annotate your code with *tags* (in comments) which can be referenced from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
 # [tag:cities_nonempty] This function always returns a non-empty list.
