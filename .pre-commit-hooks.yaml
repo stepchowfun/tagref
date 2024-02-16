@@ -3,5 +3,5 @@
   description: "Tagref helps you manage cross-references in your code."
   entry: tagref
   language: rust
-  files: ''
+  pass_filenames: false
   args: ['check']
