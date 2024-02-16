@@ -152,10 +152,10 @@ tasks:
       PATH="$PATH:/home/user/.local/bin"
 
       # Set up a Git repository.
-      git config --global user.email "tagref@example.com"
-      git config --global user.name "Tagref"
+      git config --global user.email 'tagref@example.com'
+      git config --global user.name 'Tagref'
       git config --global --add safe.directory "$PWD"
-      git init .
+      git init
       git add .
       git commit --message 'First commit!'
 
