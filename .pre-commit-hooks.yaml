@@ -1,0 +1,7 @@
+- id: tagref
+  name: tagref
+  description: "Tagref helps you manage cross-references in your code."
+  entry: tagref
+  language: rust
+  pass_filenames: false
+  args: ['check']
