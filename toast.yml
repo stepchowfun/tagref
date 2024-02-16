@@ -32,10 +32,19 @@ tasks:
       # - curl                  - Used for installing Tagref and Rust
       # - gcc-aarch64-linux-gnu - Used for linking the binary for AArch64
       # - gcc-x86-64-linux-gnu  - Used for linking the binary for x86-64
+      # - git                   - Required by pre-commit
+      # - python3-pip           - Used for installing and running pre-commit
       # - ripgrep               - Used for various linting tasks
       # - shellcheck            - Used for linting shell scripts
       apt-get update
-      apt-get install --yes curl gcc-aarch64-linux-gnu gcc-x86-64-linux-gnu ripgrep shellcheck
+      apt-get install --yes \
+        curl \
+        gcc-aarch64-linux-gnu \
+        gcc-x86-64-linux-gnu \
+        git \
+        python3-pip \
+        ripgrep \
+        shellcheck
 
   install_tagref:
     description: Install Tagref, a reference checking tool.
@@ -124,6 +133,44 @@ tasks:
       # tests that make assertions regarding the output [tag:colorless_tests].
       NO_COLOR=true cargo-offline test
 
+  test_precommit:
+    description: Check that the provided pre-commit configuration works.
+    dependencies:
+      - build
+    input_paths:
+      - .
+    excluded_input_paths:
+      - .git
+
+      # [tag:excluded_input_paths_1] Keep this in sync with [ref:excluded_input_paths_2] and
+      # [ref:gitignore].
+      - artifacts
+      - target
+    command: |
+      # Install pre-commit.
+      pip3 install pre-commit
+      PATH="$PATH:/home/user/.local/bin"
+
+      # Set up a Git repository.
+      git config --global user.email "tagref@example.com"
+      git config --global user.name "Tagref"
+      git config --global --add safe.directory "$PWD"
+      git init .
+      git add .
+      git commit --message 'First commit!'
+
+      # Create a pre-commit configuration.
+      cat << EOF > .pre-commit-config.yaml
+      repos:
+      - repo: .
+        rev: $(git rev-parse HEAD)
+        hooks:
+        - id: tagref
+      EOF
+
+      # Run the Tagref hook.
+      pre-commit run tagref --all-files
+
   lint:
     description: Run the linters.
     dependencies:
@@ -133,7 +180,8 @@ tasks:
     excluded_input_paths:
       - .git
 
-      # [tag:excluded_input_paths] Keep this in sync with [ref:gitignore].
+      # [tag:excluded_input_paths_2] Keep this in sync with [ref:excluded_input_paths_1] and
+      # [ref:gitignore].
       - artifacts
       - target
     command: |

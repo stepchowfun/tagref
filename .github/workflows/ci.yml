@@ -20,7 +20,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     - uses: stepchowfun/toast/.github/actions/toast@main
       with:
-        tasks: build test lint release run
+        tasks: build test test_precommit lint release run
         docker_repo: stephanmisc/toast
         read_remote_cache: true
         write_remote_cache: ${{ github.event_name == 'push' }}

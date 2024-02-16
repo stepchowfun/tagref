@@ -123,6 +123,20 @@ cargo install tagref
 
 You can run that command with `--force` to update an existing installation.
 
+### Installation with pre-commit
+
+If you use [pre-commit](https://pre-commit.com/), you can install Tagref by adding it to your `.pre-commit-config.yaml` as follows:
+
+```yaml
+repos:
+- repo: https://github.com/stepchowfun/tagref
+  rev: v1.8.5
+  hooks:
+  - id: tagref
+```
+
+If you happen to have Rust installed, make sure it's up-to-date since pre-commit will use it to install Tagref. If you don't already have Rust, pre-commit will install it for you.
+
 ## Acknowledgements
 
 The idea for Tagref was inspired by [the GHC notes convention](https://ghc.haskell.org/trac/ghc/wiki/Commentary/CodingStyle#Commentsinthesourcecode). [This article](http://www.aosabook.org/en/ghc.html) has more insights into how the GHC developers manage their codebase.

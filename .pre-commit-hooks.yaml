@@ -1,5 +1,5 @@
 - id: tagref
-  name: tagref
+  name: Tagref
   description: "Tagref helps you manage cross-references in your code."
   entry: tagref
   language: rust
