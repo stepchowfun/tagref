@@ -6,6 +6,8 @@ Tagref helps you manage cross-references in your code. You can use it to help ke
 
 Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration (CI) check. Tagref is fast and almost certainly won't be the bottleneck in your CI.
 
+![Welcome to Tagref.](https://raw.githubusercontent.com/stepchowfun/tagref/main/tagref.svg?sanitize=true)
+
 ## What is it?
 
 *Tagref* allows you to annotate your code with *tags* (in comments) which can be referenced from other parts of the codebase. For example, you might have a tag like this:
