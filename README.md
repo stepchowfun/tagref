@@ -2,15 +2,15 @@
 
 [![Build status](https://github.com/stepchowfun/tagref/workflows/Continuous%20integration/badge.svg?branch=main)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amain)
 
-Tagref helps you manage cross-references in your code. You can use it to help keep things in sync, document assumptions, maintain invariants, etc. Airbnb uses it for their front-end monorepo. You can use it too!
+![Welcome to Tagref.](https://raw.githubusercontent.com/stepchowfun/tagref/main/tagref.svg?sanitize=true)
+
+*Tagref* helps you manage cross-references in your code. You can use it to help keep things in sync, document assumptions, maintain invariants, etc. Airbnb uses it for their front-end monorepo. You can use it too!
 
 Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration (CI) check. Tagref is fast and almost certainly won't be the bottleneck in your CI.
 
-![Welcome to Tagref.](https://raw.githubusercontent.com/stepchowfun/tagref/main/tagref.svg?sanitize=true)
-
 ## What is it?
 
-*Tagref* allows you to annotate your code with *tags* (in comments) which can be referenced from other parts of the codebase. For example, you might have a tag like this:
+Tagref allows you to annotate your code with *tags* (in comments) which can be referenced from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
 # [tag:cities_nonempty] There should be at least one city here.
