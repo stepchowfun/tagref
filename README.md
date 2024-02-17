@@ -11,29 +11,26 @@ Tagref works with any programming language, and it respects your `.gitignore` fi
 *Tagref* allows you to annotate your code with *tags* (in comments) which can be referenced from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
-# [tag:cities_nonempty] This function always returns a non-empty list.
-def get_cities():
-    return ['San Francisco', 'Tokyo']
+# [tag:cities_nonempty] There should be at least one city here.
+cities = ['San Francisco', 'Tokyo']
 ```
 
-Elsewhere, suppose you're writing some code which depends on that postcondition. You can make that clear by referencing the tag:
+Elsewhere, suppose you're writing some code which depends on that fact. You can make that clear by referencing the tag:
 
 ```python
-cities = get_cities()
-
 first_city = cities[0] # This is safe due to [ref:cities_nonempty].
 ```
 
-Tagref ensures such references remain valid. If someone tries to delete or rename the tag, Tagref will complain. More precisely, it checks the following:
+To help you manage these tags and references, Tagref checks the following:
 
 1. References actually point to tags. A tag cannot be deleted or renamed without updating the references that point to it.
 2. Tags are unique. There is never any ambiguity about which tag is being referenced.
 
-Note that, in the example above, Tagref won't ensure that the `get_cities` function actually returns a non-empty list. It isn't magic! It only checks the two conditions above.
+In the example above, Tagref won't ensure that `cities` is actually non-empty. It isn't magic! It only checks the two criteria above.
 
 ## Usage
 
-The easiest way to use Tagref is to run the `tagref` command with no arguments. It will recursively scan the working directory and check the two conditions described above. Here are the supported command-line options:
+The easiest way to use Tagref is to run the `tagref` command with no arguments. It will recursively scan the working directory and check all the tags and references. Here are the supported command-line options:
 
 ```
 USAGE:
