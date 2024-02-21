@@ -75,7 +75,9 @@ mod tests {
 
         let errors = check(&tags, &refs);
         assert_eq!(errors.len(), 2);
-        assert!(errors[0].contains(&refs[1].label));
-        assert!(errors[1].contains(&refs[2].label));
+        assert!(
+            (errors[0].contains(&refs[1].label) && errors[1].contains(&refs[2].label))
+                || (errors[0].contains(&refs[2].label) && errors[1].contains(&refs[1].label)),
+        );
     }
 }

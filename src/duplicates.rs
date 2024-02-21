@@ -114,10 +114,17 @@ mod tests {
 
         let errors = check(&tags_map);
         assert_eq!(errors.len(), 2);
-        assert!(errors[0].contains(&format!("{}", tags_vec2[0])));
-        assert!(errors[0].contains(&format!("{}", tags_vec2[1])));
-        assert!(errors[1].contains(&format!("{}", tags_vec3[0])));
-        assert!(errors[1].contains(&format!("{}", tags_vec3[1])));
-        assert!(errors[1].contains(&format!("{}", tags_vec3[2])));
+        assert!(
+            (errors[0].contains(&format!("{}", tags_vec2[0]))
+                && errors[0].contains(&format!("{}", tags_vec2[1]))
+                && errors[1].contains(&format!("{}", tags_vec3[0]))
+                && errors[1].contains(&format!("{}", tags_vec3[1]))
+                && errors[1].contains(&format!("{}", tags_vec3[2])))
+                || (errors[0].contains(&format!("{}", tags_vec3[0]))
+                    && errors[0].contains(&format!("{}", tags_vec3[1]))
+                    && errors[0].contains(&format!("{}", tags_vec3[2]))
+                    && errors[1].contains(&format!("{}", tags_vec2[0]))
+                    && errors[1].contains(&format!("{}", tags_vec2[1]))),
+        );
     }
 }
