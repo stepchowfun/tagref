@@ -142,8 +142,7 @@ tasks:
     excluded_input_paths:
       - .git
 
-      # [tag:excluded_input_paths_1] Keep this in sync with [ref:excluded_input_paths_2] and
-      # [ref:gitignore].
+      # [tag:excluded_input_paths_1] Keep this in sync with [file:.gitignore].
       - artifacts
       - target
     command: |
@@ -180,8 +179,7 @@ tasks:
     excluded_input_paths:
       - .git
 
-      # [tag:excluded_input_paths_2] Keep this in sync with [ref:excluded_input_paths_1] and
-      # [ref:gitignore].
+      # [tag:excluded_input_paths_2] Keep this in sync with [file:.gitignore].
       - artifacts
       - target
     command: |

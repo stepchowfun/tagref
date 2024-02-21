@@ -33,7 +33,7 @@ pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
                     .add("!.hg/")
                     .unwrap() // Safe by manual inspection
                     .build()
-                    .unwrap(),
+                    .unwrap(), // Safe by manual inspection
             )
             .build_parallel()
             .run(|| {
