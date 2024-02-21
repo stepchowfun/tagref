@@ -1,4 +1,3 @@
-# [tag:gitignore] Keep this in sync with [ref:excluded_input_paths_1] and
-# [ref:excluded_input_paths_2].
+# Keep this in sync with [ref:excluded_input_paths_1] and [ref:excluded_input_paths_2].
 /artifacts/
 /target/

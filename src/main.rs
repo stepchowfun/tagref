@@ -1,16 +1,18 @@
 mod count;
+mod dir_references;
 mod duplicates;
+mod file_references;
 mod label;
-mod references;
+mod tag_references;
 mod walk;
 
 use {
     atty::Stream,
-    clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
+    clap::{App, AppSettings, Arg, SubCommand},
     colored::Colorize,
     regex::{escape, Regex},
     std::{
-        collections::HashMap,
+        collections::{HashMap, HashSet},
         io::BufReader,
         path::{Path, PathBuf},
         process::exit,
@@ -23,30 +25,60 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // Command-line option and subcommand names
 const CHECK_SUBCOMMAND: &str = "check";
-const LIST_REFS_SUBCOMMAND: &str = "list-refs";
 const LIST_TAGS_SUBCOMMAND: &str = "list-tags";
+const LIST_REFS_SUBCOMMAND: &str = "list-refs";
+const LIST_FILES_SUBCOMMAND: &str = "list-files";
+const LIST_DIRS_SUBCOMMAND: &str = "list-dirs";
 const LIST_UNUSED_SUBCOMMAND: &str = "list-unused";
-const LIST_UNUSED_ERROR_OPTION: &str = "fail-if-any";
+const LIST_UNUSED_ERROR_OPTION: &str = "fail-if-any"; // [tag:fail_if_any]
 const PATH_OPTION: &str = "path";
-const TAG_PREFIX_OPTION: &str = "tag-prefix";
-const REF_PREFIX_OPTION: &str = "ref-prefix";
+const TAG_SIGIL_OPTION: &str = "tag-sigil";
+const REF_SIGIL_OPTION: &str = "ref-sigil";
+const FILE_SIGIL_OPTION: &str = "file-sigil";
+const DIR_SIGIL_OPTION: &str = "dir-sigil";
 
-// Parse the command-line optins.
-fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
+// This enum represents the subcommands.
+enum Subcommand {
+    Check,
+    ListTags,
+    ListRefs,
+    ListFiles,
+    ListDirs,
+    ListUnused(bool), // [ref:fail_if_any]
+}
+
+// This struct represents the command-line arguments.
+#[allow(clippy::struct_excessive_bools)]
+pub struct Settings {
+    paths: Vec<PathBuf>,
+    tag_sigil: String,
+    ref_sigil: String,
+    file_sigil: String,
+    dir_sigil: String,
+    subcommand: Subcommand,
+}
+
+// Parse the command-line arguments.
+#[allow(clippy::too_many_lines)]
+fn settings() -> Settings {
     // Set up the command-line interface.
     let matches = App::new("Tagref")
         .version(VERSION)
         .version_short("v")
         .author("Stephan Boyer <stephan@stephanboyer.com>")
         .about(
-            " \
-             Tagref helps you maintain cross-references in your code. It checks \
-             the following:\n\n1. References actually point to tags. \n2. Tags are \
-             unique.\n\nThe syntax for tags is [tag:?label?] and the syntax for \
-             references is [ref:?label?]. For more information, visit \
-             https://github.com/stepchowfun/tagref. \
+            "\
+             Tagref helps you maintain cross-references in your code.\n\
+             \n\
+             You can put tags like [tag:foo] in your code (in comments), and you can reference \
+             them like [ref:foo]. You can also references files like [file:src/main.rs] and \
+             directories like [dir:src].\n\
+             \n\
+             Tagref checks that tags are unique and that references are not dangling.\n\
+             \n\
+             For more information, visit https://github.com/stepchowfun/tagref.\
              "
-            .replace('?', "") // The '?'s are to avoid tag conflicts.
+            .replace('?', "")
             .trim(),
         )
         .setting(AppSettings::ColoredHelp)
@@ -63,26 +95,51 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
                 .multiple(true),
         )
         .arg(
-            Arg::with_name(TAG_PREFIX_OPTION)
-                .value_name("TAG_PREFIX")
+            Arg::with_name(TAG_SIGIL_OPTION)
+                .value_name("TAG_SIGIL")
                 .short("t")
-                .long(TAG_PREFIX_OPTION)
-                .help("Sets the prefix used for locating tags")
-                .default_value("tag"), // [tag:tag_prefix_default]
+                .long(TAG_SIGIL_OPTION)
+                .help("Sets the sigil used for tags")
+                .default_value("tag"), // [tag:tag_sigil_default]
         )
         .arg(
-            Arg::with_name(REF_PREFIX_OPTION)
-                .value_name("REF_PREFIX")
+            Arg::with_name(REF_SIGIL_OPTION)
+                .value_name("REF_SIGIL")
                 .short("r")
-                .long(REF_PREFIX_OPTION)
-                .help("Sets the prefix used for locating references")
-                .default_value("ref"), // [tag:ref_prefix_default]
+                .long(REF_SIGIL_OPTION)
+                .help("Sets the sigil used for tag references")
+                .default_value("ref"), // [tag:ref_sigil_default]
+        )
+        .arg(
+            Arg::with_name(FILE_SIGIL_OPTION)
+                .value_name("FILE_SIGIL")
+                .short("f")
+                .long(FILE_SIGIL_OPTION)
+                .help("Sets the sigil used for file references")
+                .default_value("file"), // [tag:file_sigil_default]
+        )
+        .arg(
+            Arg::with_name(DIR_SIGIL_OPTION)
+                .value_name("DIR_SIGIL")
+                .short("d")
+                .long(DIR_SIGIL_OPTION)
+                .help("Sets the sigil used for directory references")
+                .default_value("dir"), // [tag:dir_sigil_default]
         )
         .subcommand(
             SubCommand::with_name(CHECK_SUBCOMMAND)
                 .about("Checks all the tags and references (default)"),
         )
         .subcommand(SubCommand::with_name(LIST_TAGS_SUBCOMMAND).about("Lists all the tags"))
+        .subcommand(
+            SubCommand::with_name(LIST_REFS_SUBCOMMAND).about("Lists all the tag references"),
+        )
+        .subcommand(
+            SubCommand::with_name(LIST_FILES_SUBCOMMAND).about("Lists all the file references"),
+        )
+        .subcommand(
+            SubCommand::with_name(LIST_DIRS_SUBCOMMAND).about("Lists all the directory references"),
+        )
         .subcommand(
             SubCommand::with_name(LIST_UNUSED_SUBCOMMAND)
                 .about("Lists the unreferenced tags")
@@ -92,7 +149,6 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
                         .help("Exits with an error status code if any tags are unreferenced"),
                 ),
         )
-        .subcommand(SubCommand::with_name(LIST_REFS_SUBCOMMAND).about("Lists all the references"))
         .get_matches();
 
     // Determine which paths to scan. The `unwrap` is safe due to [ref:path_default].
@@ -102,14 +158,44 @@ fn settings<'a>() -> (ArgMatches<'a>, Vec<PathBuf>, String, String) {
         .map(|path| Path::new(path).to_owned())
         .collect::<Vec<_>>();
 
-    // Determine the ref prefix. The `unwrap` is safe due to [ref:ref_prefix_default].
-    let ref_prefix = matches.value_of(REF_PREFIX_OPTION).unwrap().to_owned();
+    // Determine the tag sigil. The `unwrap` is safe due to [ref:tag_sigil_default].
+    let tag_sigil = matches.value_of(TAG_SIGIL_OPTION).unwrap().to_owned();
 
-    // Determine the tag prefix. The `unwrap` is safe due to [ref:tag_prefix_default].
-    let tag_prefix = matches.value_of(TAG_PREFIX_OPTION).unwrap().to_owned();
+    // Determine the ref sigil. The `unwrap` is safe due to [ref:ref_sigil_default].
+    let ref_sigil = matches.value_of(REF_SIGIL_OPTION).unwrap().to_owned();
+
+    // Determine the file sigil. The `unwrap` is safe due to [ref:file_sigil_default].
+    let file_sigil = matches.value_of(FILE_SIGIL_OPTION).unwrap().to_owned();
+
+    // Determine the directory sigil. The `unwrap` is safe due to [ref:dir_sigil_default].
+    let dir_sigil = matches.value_of(DIR_SIGIL_OPTION).unwrap().to_owned();
+
+    // Determine the subcommand.
+    let subcommand = match matches.subcommand_name() {
+        Some(CHECK_SUBCOMMAND) | None => Subcommand::Check,
+        Some(LIST_TAGS_SUBCOMMAND) => Subcommand::ListTags,
+        Some(LIST_REFS_SUBCOMMAND) => Subcommand::ListRefs,
+        Some(LIST_FILES_SUBCOMMAND) => Subcommand::ListFiles,
+        Some(LIST_DIRS_SUBCOMMAND) => Subcommand::ListDirs,
+        Some(LIST_UNUSED_SUBCOMMAND) => Subcommand::ListUnused(
+            matches
+                .subcommand
+                .unwrap() // Safe because we're _in_ a subcommand
+                .matches
+                .is_present(LIST_UNUSED_ERROR_OPTION),
+        ),
+        Some(&_) => panic!("Unimplemented subcommand."),
+    };
 
     // Return the command-line options.
-    (matches, paths, tag_prefix, ref_prefix)
+    Settings {
+        paths,
+        tag_sigil,
+        ref_sigil,
+        file_sigil,
+        dir_sigil,
+        subcommand,
+    }
 }
 
 // Program entrypoint
@@ -119,181 +205,165 @@ fn entry() -> Result<(), String> {
     colored::control::set_override(atty::is(Stream::Stdout));
 
     // Parse the command-line options.
-    let (matches, paths, tag_prefix, ref_prefix) = settings();
+    let settings = settings();
 
     // Compile the regular expressions in advance.
     let tag_regex: Regex = Regex::new(&format!(
         "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
-        escape(&tag_prefix),
+        escape(&settings.tag_sigil),
     ))
-    .unwrap();
+    .unwrap(); // Safe by manual inspection
     let ref_regex: Regex = Regex::new(&format!(
         "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
-        escape(&ref_prefix),
+        escape(&settings.ref_sigil),
     ))
-    .unwrap();
+    .unwrap(); // Safe by manual inspection
+    let file_regex: Regex = Regex::new(&format!(
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        escape(&settings.file_sigil),
+    ))
+    .unwrap(); // Safe by manual inspection
+    let dir_regex: Regex = Regex::new(&format!(
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        escape(&settings.dir_sigil),
+    ))
+    .unwrap(); // Safe by manual inspection
+
+    // Parse all the tags and references.
+    let tags = Arc::new(Mutex::new(HashMap::new()));
+    let refs = Arc::new(Mutex::new(Vec::new()));
+    let files = Arc::new(Mutex::new(Vec::new()));
+    let dirs = Arc::new(Mutex::new(Vec::new()));
+    let tags_clone = tags.clone();
+    let refs_clone = refs.clone();
+    let files_clone = files.clone();
+    let dirs_clone = dirs.clone();
+    let tag_regex_clone = tag_regex.clone();
+    let ref_regex_clone = ref_regex.clone();
+    let file_regex_clone = file_regex.clone();
+    let dir_regex_clone = dir_regex.clone();
+    let files_scanned = walk::walk(&settings.paths, move |file_path, file| {
+        let labels = label::parse(
+            &tag_regex_clone,
+            &ref_regex_clone,
+            &file_regex_clone,
+            &dir_regex_clone,
+            file_path,
+            BufReader::new(file),
+        );
+        for tag in labels.tags {
+            tags_clone
+                .lock()
+                .unwrap() // Safe assuming no poisoning
+                .entry(tag.label.clone())
+                .or_insert_with(Vec::new)
+                .push(tag.clone());
+        }
+        refs_clone.lock().unwrap().extend(labels.refs); // Safe assuming no poisoning
+        files_clone.lock().unwrap().extend(labels.files); // Safe assuming no poisoning
+        dirs_clone.lock().unwrap().extend(labels.dirs); // Safe assuming no poisoning
+    });
 
     // Decide what to do based on the subcommand.
-    match matches.subcommand_name() {
-        Some(LIST_TAGS_SUBCOMMAND) => {
-            // Parse and print all the tags.
-            let mutex = Arc::new(Mutex::new(()));
-            let _ = walk::walk(&paths, move |file_path, file| {
-                for tag in label::parse(
-                    &tag_regex,
-                    &ref_regex,
-                    label::Type::Tag,
-                    file_path,
-                    BufReader::new(file),
-                ) {
-                    let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
-                    println!("{tag}");
-                }
-            });
+    match settings.subcommand {
+        Subcommand::Check => {
+            // Errors will be accumulated in this vector.
+            let mut errors = Vec::<String>::new();
+
+            // Convert the `tags` map into a set and check for duplicates. The `unwrap` is safe
+            // assuming no poisoning.
+            errors.extend(duplicates::check(&tags.lock().unwrap()));
+
+            // Check the tag references. The `unwrap`s are safe assuming no poisoning.
+            let tags = tags
+                .lock()
+                .unwrap()
+                .keys()
+                .cloned()
+                .collect::<HashSet<String>>();
+            let refs = refs.lock().unwrap();
+            errors.extend(tag_references::check(&tags, &refs));
+
+            // Check the file references. The `unwrap` is safe assuming no poisoning.
+            errors.extend(file_references::check(&files.lock().unwrap()));
+
+            // Check the directory references. The `unwrap` is safe assuming no poisoning.
+            errors.extend(dir_references::check(&dirs.lock().unwrap()));
+
+            // Check for any errors and report the result.
+            if errors.is_empty() {
+                println!(
+                    "{}",
+                    format!(
+                        "{}, {}, {}, and {} validated in {}.",
+                        count::count(tags.len(), "tag"),
+                        count::count(refs.len(), "tag reference"),
+                        // The `unwrap` is safe assuming no poisoning.
+                        count::count(files.lock().unwrap().len(), "file reference"),
+                        // The `unwrap` is safe assuming no poisoning.
+                        count::count(dirs.lock().unwrap().len(), "directory reference"),
+                        count::count(files_scanned, "file"),
+                    )
+                    .green(),
+                );
+            } else {
+                return Err(errors.join("\n\n"));
+            }
         }
 
-        Some(LIST_REFS_SUBCOMMAND) => {
-            // Parse and print all the references.
-            let mutex = Arc::new(Mutex::new(()));
-            let _ = walk::walk(&paths, move |file_path, file| {
-                for r#ref in label::parse(
-                    &tag_regex,
-                    &ref_regex,
-                    label::Type::Ref,
-                    file_path,
-                    BufReader::new(file),
-                ) {
-                    let _lock = mutex.lock().unwrap(); // Safe assuming no poisoning
-                    println!("{ref}");
-                }
-            });
-        }
-
-        Some(LIST_UNUSED_SUBCOMMAND) => {
-            // Store the tags into a `HashMap`. The values are `Vec`s to allow for duplicates.
-            let tags_map = Arc::new(Mutex::new(HashMap::new()));
-
-            // Parse all the tags.
-            let tags_map_add_tags = tags_map.clone();
-            let tag_regex_clone = tag_regex.clone();
-            let ref_regex_clone = tag_regex.clone();
-            let _ = walk::walk(&paths, move |file_path, file| {
-                for tag in label::parse(
-                    &tag_regex_clone,
-                    &ref_regex_clone,
-                    label::Type::Tag,
-                    file_path,
-                    BufReader::new(file),
-                ) {
-                    tags_map_add_tags
-                        .lock()
-                        .unwrap() // Safe assuming no poisoning
-                        .entry(tag.label.clone())
-                        .or_insert_with(Vec::new)
-                        .push(tag.clone());
-                }
-            });
-
-            // Remove all the referenced tags.
-            let tags_map_remove_tags = tags_map.clone();
-            let _ = walk::walk(&paths, move |file_path, file| {
-                for r#ref in label::parse(
-                    &tag_regex,
-                    &ref_regex,
-                    label::Type::Ref,
-                    file_path,
-                    BufReader::new(file),
-                ) {
-                    tags_map_remove_tags
-                        .lock()
-                        .unwrap() // Safe assuming no poisoning
-                        .remove(&r#ref.label);
-                }
-            });
-
-            // Print the remaining tags. The `unwrap` is safe assuming no poisoning.
-            for tags in tags_map.lock().unwrap().values() {
-                for tag in tags {
-                    println!("{tag}");
+        Subcommand::ListTags => {
+            // Print all the tags. The `unwrap` is safe assuming no poisoning.
+            for dupes in tags.lock().unwrap().values() {
+                for dupe in dupes {
+                    println!("{dupe}");
                 }
             }
-            let error_flag_passed = matches
-                .subcommand
-                .unwrap() // Safe because we're _in_ a subcommand
-                .matches
-                .is_present(LIST_UNUSED_ERROR_OPTION);
+        }
+
+        Subcommand::ListRefs => {
+            // Print all the tag references. The `unwrap` is safe assuming no poisoning.
+            for r#ref in refs.lock().unwrap().iter() {
+                println!("{ref}");
+            }
+        }
+
+        Subcommand::ListFiles => {
+            // Print all the file references. The `unwrap` is safe assuming no poisoning.
+            for file in files.lock().unwrap().iter() {
+                println!("{file}");
+            }
+        }
+
+        Subcommand::ListDirs => {
+            // Print all the directory references. The `unwrap` is safe assuming no poisoning.
+            for dir in dirs.lock().unwrap().iter() {
+                println!("{dir}");
+            }
+        }
+
+        Subcommand::ListUnused(error_flag_set) => {
+            // Remove all the referenced tags. The `unwrap` is safe assuming no poisoning.
+            for r#ref in refs.lock().unwrap().iter() {
+                tags.lock()
+                    .unwrap() // Safe assuming no poisoning
+                    .remove(&r#ref.label);
+            }
+
+            // Print the remaining tags. The `unwrap` is safe assuming no poisoning.
+            for dupes in tags.lock().unwrap().values() {
+                for dupe in dupes {
+                    println!("{dupe}");
+                }
+            }
+
             // Error out if the error flag has been passed and there are unused tags.
             // The `unwrap` is safe assuming no poisoning.
-            if error_flag_passed && !tags_map.lock().unwrap().is_empty() {
+            if error_flag_set && !tags.lock().unwrap().is_empty() {
                 return Err(format!(
                     "Found unused tags while using --{LIST_UNUSED_ERROR_OPTION}",
                 ));
             }
         }
-
-        Some(CHECK_SUBCOMMAND) | None => {
-            // Parse all the tags into a `HashMap`. The values are `Vec`s to allow for duplicates.
-            // We'll report duplicates later.
-            let tags = Arc::new(Mutex::new(HashMap::new()));
-            let tags_clone = tags.clone();
-            let tag_regex_clone = tag_regex.clone();
-            let ref_regex_clone = tag_regex.clone();
-            let _ = walk::walk(&paths, move |file_path, file| {
-                for tag in label::parse(
-                    &tag_regex_clone,
-                    &ref_regex_clone,
-                    label::Type::Tag,
-                    file_path,
-                    BufReader::new(file),
-                ) {
-                    tags_clone
-                        .lock()
-                        .unwrap() // Safe assuming no poisoning
-                        .entry(tag.label.clone())
-                        .or_insert_with(Vec::new)
-                        .push(tag.clone());
-                }
-            });
-
-            // Convert tags_map into a set and check for duplicates. The `unwrap` is safe assuming
-            // no poisoning.
-            let tags = duplicates::check(&tags.lock().unwrap())?;
-
-            // Parse all the references.
-            let refs = Arc::new(Mutex::new(Vec::new()));
-            let refs_clone = refs.clone();
-            let files_scanned = walk::walk(&paths, move |file_path, file| {
-                let results = label::parse(
-                    &tag_regex,
-                    &ref_regex,
-                    label::Type::Ref,
-                    file_path,
-                    BufReader::new(file),
-                );
-                if !results.is_empty() {
-                    refs_clone
-                        .lock()
-                        .unwrap() // Safe assuming no poisoning
-                        .extend(results);
-                }
-            });
-
-            // Check the references. The `unwrap` is safe assuming no poisoning.
-            let refs = refs.lock().unwrap();
-            references::check(&tags, &refs)?;
-            println!(
-                "{}",
-                format!(
-                    "{} and {} validated in {}.",
-                    count::count(tags.len(), "tag"),
-                    count::count(refs.len(), "reference"),
-                    count::count(files_scanned, "file"),
-                )
-                .green(),
-            );
-        }
-
-        Some(&_) => panic!(),
     }
 
     // Everything succeeded.

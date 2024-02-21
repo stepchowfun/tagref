@@ -10,7 +10,7 @@ Tagref works with any programming language, and it respects your `.gitignore` fi
 
 ## What is it?
 
-Tagref allows you to annotate your code with *tags* (in comments) which can be referenced from other parts of the codebase. For example, you might have a tag like this:
+Tagref allows you to annotate your code with *tags* (in comments) which can be *referenced* from other parts of the codebase. For example, you might have a tag like this:
 
 ```python
 # [tag:cities_nonempty] There should be at least one city here.
@@ -30,6 +30,18 @@ To help you manage these tags and references, Tagref checks the following:
 
 In the example above, Tagref won't ensure that `cities` is actually non-empty. It isn't magic! It only checks the two criteria above.
 
+In addition to references to tags, Tagref also supports *file references* and *directory references*. A file reference guarantees that the given file exists. For example:
+
+```markdown
+The program entrypoint is located in [file:src/main.rs].
+```
+
+A directory reference guarantees that the given directory exists. For example:
+
+```markdown
+All of the files in [dir:src] must be formatted by `rustfmt`.
+```
+
 ## Usage
 
 The easiest way to use Tagref is to run the `tagref` command with no arguments. It will recursively scan the working directory and check all the tags and references. Here are the supported command-line options:
@@ -39,20 +51,27 @@ USAGE:
     tagref [SUBCOMMAND]
 
 OPTIONS:
+    -d, --dir-sigil <DIR_SIGIL>
+            Sets the sigil used for directory references [default: dir]
+
+    -f, --file-sigil <FILE_SIGIL>
+            Sets the sigil used for file references [default: file]
+
     -h, --help
             Prints help information
 
     -p, --path <PATH>...
             Adds the path of a directory to scan [default: .]
 
-    -r, --ref-prefix <REF_PREFIX>
-            Sets the prefix used for locating references [default: ref]
+    -r, --ref-sigil <REF_SIGIL>
+            Sets the sigil used for tag references [default: ref]
 
-    -t, --tag-prefix <TAG_PREFIX>
-            Sets the prefix used for locating tags [default: tag]
+    -t, --tag-sigil <TAG_SIGIL>
+            Sets the sigil used for tags [default: tag]
 
     -v, --version
             Prints version information
+
 
 SUBCOMMANDS:
     check
@@ -61,8 +80,14 @@ SUBCOMMANDS:
     help
             Prints this message or the help of the given subcommand(s)
 
+    list-dirs
+            Lists all the directory references
+
+    list-files
+            Lists all the file references
+
     list-refs
-            Lists all the references
+            Lists all the tag references
 
     list-tags
             Lists all the tags

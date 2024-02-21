@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2024-02-21
+
+### Added
+- Tagref now supports file and directory references.
+
+### Changed
+- The `--tag-prefix` and `--ref-prefix` options have been renamed to `--tag-sigil` and `--ref-sigil`, respectively.
+- Tagref now reports all errors rather than just a subset of them.
+
 ## [1.8.5] - 2024-02-16
 
 ### Added
