@@ -70,9 +70,9 @@ fn settings() -> Settings {
             "\
              Tagref helps you maintain cross-references in your code.\n\
              \n\
-             You can put tags like [tag:foo] in your code (in comments), and you can reference \
-             them like [ref:foo]. You can also references files like [file:src/main.rs] and \
-             directories like [dir:src].\n\
+             You can annotate your code with tags like [tag:foo] and reference them like \
+             [ref:foo]. You can also reference files like [file:src/main.rs] and directories like \
+             [dir:src].\n\
              \n\
              Tagref checks that tags are unique and that references are not dangling.\n\
              \n\
