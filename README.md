@@ -28,18 +28,18 @@ To help you manage these tags and references, Tagref checks the following:
 1. References actually point to tags. A tag cannot be deleted or renamed without updating the references that point to it.
 2. Tags are unique. There is never any ambiguity about which tag is being referenced.
 
-In the example above, Tagref won't ensure that `cities` is actually non-empty. It isn't magic! It only checks the two criteria above.
+In the example above, Tagref doesn't ensure that `cities` is actually non-empty. It isn't magic! It only checks the two criteria above.
 
 In addition to references to tags, Tagref also supports *file references* and *directory references*. A file reference guarantees that the given file exists. For example:
 
-```markdown
-The program entrypoint is located in [file:src/main.rs].
+```python
+# If you bump the version, be sure to update [file:CHANGELOG.md].
 ```
 
 A directory reference guarantees that the given directory exists. For example:
 
-```markdown
-All of the files in [dir:src] must be formatted by `rustfmt`.
+```python
+# This script will format the files in [dir:src].
 ```
 
 ## Usage
