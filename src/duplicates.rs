@@ -1,19 +1,19 @@
 use {
-    crate::label::Label,
+    crate::directive::Directive,
     std::{collections::HashMap, fmt::Write},
 };
 
 // This function checks that all the vectors in `tags_map` have at most one element. It returns a
 // vector of error strings.
-pub fn check(tags_map: &HashMap<String, Vec<Label>>) -> Vec<String> {
+pub fn check(tags_map: &HashMap<String, Vec<Directive>>) -> Vec<String> {
     let mut errors = Vec::<String>::new();
 
-    for (tag, labels) in tags_map {
-        if labels.len() > 1 {
+    for (label, directives) in tags_map {
+        if directives.len() > 1 {
             let mut error = String::new();
-            let _ = writeln!(error, "Duplicate tags found for label `{tag}`:");
-            for label in labels {
-                let _ = writeln!(error, "  {label}");
+            let _ = writeln!(error, "Duplicate tags found for label `{label}`:");
+            for directive in directives {
+                let _ = writeln!(error, "  {directive}");
             }
             errors.push(error);
         }
@@ -26,8 +26,8 @@ pub fn check(tags_map: &HashMap<String, Vec<Label>>) -> Vec<String> {
 mod tests {
     use {
         crate::{
+            directive::{Directive, Type},
             duplicates::check,
-            label::{Label, Type},
         },
         std::{collections::HashMap, path::Path},
     };
@@ -41,22 +41,22 @@ mod tests {
     fn check_no_dupes() {
         let mut tags_map = HashMap::new();
 
-        let tags_vec1 = vec![Label {
-            label_type: Type::Tag,
-            label: "label1".to_owned(),
+        let tags_vec1 = vec![Directive {
+            r#type: Type::Tag,
+            label: "tag1".to_owned(),
             path: Path::new("file1.rs").to_owned(),
             line_number: 1,
         }];
 
-        let tags_vec2 = vec![Label {
-            label_type: Type::Tag,
-            label: "label2".to_owned(),
+        let tags_vec2 = vec![Directive {
+            r#type: Type::Tag,
+            label: "tag2".to_owned(),
             path: Path::new("file2.rs").to_owned(),
             line_number: 2,
         }];
 
-        tags_map.insert("label1".to_owned(), tags_vec1);
-        tags_map.insert("label2".to_owned(), tags_vec2);
+        tags_map.insert("tag1".to_owned(), tags_vec1);
+        tags_map.insert("tag2".to_owned(), tags_vec2);
 
         assert!(check(&tags_map).is_empty());
     }
@@ -65,52 +65,52 @@ mod tests {
     fn check_dupes() {
         let mut tags_map = HashMap::new();
 
-        let tags_vec1 = vec![Label {
-            label_type: Type::Tag,
-            label: "label1".to_owned(),
+        let tags_vec1 = vec![Directive {
+            r#type: Type::Tag,
+            label: "tag1".to_owned(),
             path: Path::new("file1.rs").to_owned(),
             line_number: 1,
         }];
 
         let tags_vec2 = vec![
-            Label {
-                label_type: Type::Tag,
-                label: "label2".to_owned(),
+            Directive {
+                r#type: Type::Tag,
+                label: "tag2".to_owned(),
                 path: Path::new("file1.rs").to_owned(),
                 line_number: 1,
             },
-            Label {
-                label_type: Type::Tag,
-                label: "label2".to_owned(),
+            Directive {
+                r#type: Type::Tag,
+                label: "tag2".to_owned(),
                 path: Path::new("file2.rs").to_owned(),
                 line_number: 2,
             },
         ];
 
         let tags_vec3 = vec![
-            Label {
-                label_type: Type::Tag,
-                label: "label3".to_owned(),
+            Directive {
+                r#type: Type::Tag,
+                label: "tag3".to_owned(),
                 path: Path::new("file1.rs").to_owned(),
                 line_number: 1,
             },
-            Label {
-                label_type: Type::Tag,
-                label: "label3".to_owned(),
+            Directive {
+                r#type: Type::Tag,
+                label: "tag3".to_owned(),
                 path: Path::new("file2.rs").to_owned(),
                 line_number: 2,
             },
-            Label {
-                label_type: Type::Tag,
-                label: "label3".to_owned(),
+            Directive {
+                r#type: Type::Tag,
+                label: "tag3".to_owned(),
                 path: Path::new("file3.rs").to_owned(),
                 line_number: 2,
             },
         ];
 
-        tags_map.insert("label1".to_owned(), tags_vec1.clone());
-        tags_map.insert("label2".to_owned(), tags_vec2.clone());
-        tags_map.insert("label3".to_owned(), tags_vec3.clone());
+        tags_map.insert("tag1".to_owned(), tags_vec1.clone());
+        tags_map.insert("tag2".to_owned(), tags_vec2.clone());
+        tags_map.insert("tag3".to_owned(), tags_vec3.clone());
 
         let errors = check(&tags_map);
         assert_eq!(errors.len(), 2);

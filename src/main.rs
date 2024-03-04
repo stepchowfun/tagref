@@ -1,8 +1,8 @@
 mod count;
 mod dir_references;
+mod directive;
 mod duplicates;
 mod file_references;
-mod label;
 mod tag_references;
 mod walk;
 
@@ -243,7 +243,7 @@ fn entry() -> Result<(), String> {
     let file_regex_clone = file_regex.clone();
     let dir_regex_clone = dir_regex.clone();
     let files_scanned = walk::walk(&settings.paths, move |file_path, file| {
-        let labels = label::parse(
+        let directives = directive::parse(
             &tag_regex_clone,
             &ref_regex_clone,
             &file_regex_clone,
@@ -251,7 +251,7 @@ fn entry() -> Result<(), String> {
             file_path,
             BufReader::new(file),
         );
-        for tag in labels.tags {
+        for tag in directives.tags {
             tags_clone
                 .lock()
                 .unwrap() // Safe assuming no poisoning
@@ -259,9 +259,9 @@ fn entry() -> Result<(), String> {
                 .or_insert_with(Vec::new)
                 .push(tag.clone());
         }
-        refs_clone.lock().unwrap().extend(labels.refs); // Safe assuming no poisoning
-        files_clone.lock().unwrap().extend(labels.files); // Safe assuming no poisoning
-        dirs_clone.lock().unwrap().extend(labels.dirs); // Safe assuming no poisoning
+        refs_clone.lock().unwrap().extend(directives.refs); // Safe assuming no poisoning
+        files_clone.lock().unwrap().extend(directives.files); // Safe assuming no poisoning
+        dirs_clone.lock().unwrap().extend(directives.dirs); // Safe assuming no poisoning
     });
 
     // Decide what to do based on the subcommand.
