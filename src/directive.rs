@@ -16,20 +16,20 @@ pub enum Type {
 }
 
 #[derive(Clone, Debug)]
-pub struct Label {
-    pub label_type: Type,
+pub struct Directive {
+    pub r#type: Type,
     pub label: String,
     pub path: PathBuf,
     pub line_number: usize,
 }
 
-// Sometimes we need to be able to print a label.
-impl fmt::Display for Label {
+// Sometimes we need to be able to print a directive.
+impl fmt::Display for Directive {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "[{}:{}] @ {}:{}",
-            match self.label_type {
+            match self.r#type {
                 Type::Tag => "tag",
                 Type::Ref => "ref",
                 Type::File => "file",
@@ -43,14 +43,14 @@ impl fmt::Display for Label {
 }
 
 #[derive(Clone, Debug)]
-pub struct Labels {
-    pub tags: Vec<Label>,
-    pub refs: Vec<Label>,
-    pub files: Vec<Label>,
-    pub dirs: Vec<Label>,
+pub struct Directives {
+    pub tags: Vec<Directive>,
+    pub refs: Vec<Directive>,
+    pub files: Vec<Directive>,
+    pub dirs: Vec<Directive>,
 }
 
-// This function returns all the labels in a file for a given type.
+// This function returns all the directives in a file for a given type.
 pub fn parse<R: BufRead>(
     tag_regex: &Regex,
     ref_regex: &Regex,
@@ -58,11 +58,11 @@ pub fn parse<R: BufRead>(
     dir_regex: &Regex,
     path: &Path,
     reader: R,
-) -> Labels {
-    let mut tags: Vec<Label> = Vec::new();
-    let mut refs: Vec<Label> = Vec::new();
-    let mut files: Vec<Label> = Vec::new();
-    let mut dirs: Vec<Label> = Vec::new();
+) -> Directives {
+    let mut tags: Vec<Directive> = Vec::new();
+    let mut refs: Vec<Directive> = Vec::new();
+    let mut files: Vec<Directive> = Vec::new();
+    let mut dirs: Vec<Directive> = Vec::new();
 
     for (line_number, line_result) in reader.lines().enumerate() {
         if let Ok(line) = line_result {
@@ -70,8 +70,8 @@ pub fn parse<R: BufRead>(
             for captures in tag_regex.captures_iter(&line) {
                 // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
                 // we are justified in unwrapping.
-                tags.push(Label {
-                    label_type: Type::Tag,
+                tags.push(Directive {
+                    r#type: Type::Tag,
                     label: captures.get(1).unwrap().as_str().to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
@@ -82,8 +82,8 @@ pub fn parse<R: BufRead>(
             for captures in ref_regex.captures_iter(&line) {
                 // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
                 // we are justified in unwrapping.
-                refs.push(Label {
-                    label_type: Type::Ref,
+                refs.push(Directive {
+                    r#type: Type::Ref,
                     label: captures.get(1).unwrap().as_str().to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
@@ -94,8 +94,8 @@ pub fn parse<R: BufRead>(
             for captures in file_regex.captures_iter(&line) {
                 // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
                 // we are justified in unwrapping.
-                files.push(Label {
-                    label_type: Type::File,
+                files.push(Directive {
+                    r#type: Type::File,
                     label: captures.get(1).unwrap().as_str().to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
@@ -106,8 +106,8 @@ pub fn parse<R: BufRead>(
             for captures in dir_regex.captures_iter(&line) {
                 // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
                 // we are justified in unwrapping.
-                dirs.push(Label {
-                    label_type: Type::Dir,
+                dirs.push(Directive {
+                    r#type: Type::Dir,
                     label: captures.get(1).unwrap().as_str().to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
@@ -116,7 +116,7 @@ pub fn parse<R: BufRead>(
         }
     }
 
-    Labels {
+    Directives {
         tags,
         refs,
         files,
@@ -127,7 +127,7 @@ pub fn parse<R: BufRead>(
 #[cfg(test)]
 mod tests {
     use {
-        crate::label::{parse, Type},
+        crate::directive::{parse, Type},
         regex::Regex,
         std::path::Path,
     };
@@ -147,7 +147,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -156,10 +156,10 @@ mod tests {
             contents,
         );
 
-        assert!(labels.tags.is_empty());
-        assert!(labels.refs.is_empty());
-        assert!(labels.files.is_empty());
-        assert!(labels.dirs.is_empty());
+        assert!(directives.tags.is_empty());
+        assert!(directives.refs.is_empty());
+        assert!(directives.files.is_empty());
+        assert!(directives.dirs.is_empty());
     }
 
     #[test]
@@ -178,7 +178,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -187,14 +187,14 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert_eq!(labels.tags.len(), 1);
-        assert_eq!(labels.tags[0].label_type, Type::Tag);
-        assert_eq!(labels.tags[0].label, "label");
-        assert_eq!(labels.tags[0].path, path);
-        assert_eq!(labels.tags[0].line_number, 1);
-        assert!(labels.refs.is_empty());
-        assert!(labels.files.is_empty());
-        assert!(labels.dirs.is_empty());
+        assert_eq!(directives.tags.len(), 1);
+        assert_eq!(directives.tags[0].r#type, Type::Tag);
+        assert_eq!(directives.tags[0].label, "label");
+        assert_eq!(directives.tags[0].path, path);
+        assert_eq!(directives.tags[0].line_number, 1);
+        assert!(directives.refs.is_empty());
+        assert!(directives.files.is_empty());
+        assert!(directives.dirs.is_empty());
     }
 
     #[test]
@@ -213,7 +213,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -222,14 +222,14 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert!(labels.tags.is_empty());
-        assert_eq!(labels.refs.len(), 1);
-        assert_eq!(labels.refs[0].label_type, Type::Ref);
-        assert_eq!(labels.refs[0].label, "label");
-        assert_eq!(labels.refs[0].path, path);
-        assert_eq!(labels.refs[0].line_number, 1);
-        assert!(labels.files.is_empty());
-        assert!(labels.dirs.is_empty());
+        assert!(directives.tags.is_empty());
+        assert_eq!(directives.refs.len(), 1);
+        assert_eq!(directives.refs[0].r#type, Type::Ref);
+        assert_eq!(directives.refs[0].label, "label");
+        assert_eq!(directives.refs[0].path, path);
+        assert_eq!(directives.refs[0].line_number, 1);
+        assert!(directives.files.is_empty());
+        assert!(directives.dirs.is_empty());
     }
 
     #[test]
@@ -248,7 +248,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -257,14 +257,14 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert!(labels.tags.is_empty());
-        assert!(labels.refs.is_empty());
-        assert_eq!(labels.files.len(), 1);
-        assert_eq!(labels.files[0].label_type, Type::File);
-        assert_eq!(labels.files[0].label, "foo/bar/baz.txt");
-        assert_eq!(labels.files[0].path, path);
-        assert_eq!(labels.files[0].line_number, 1);
-        assert!(labels.dirs.is_empty());
+        assert!(directives.tags.is_empty());
+        assert!(directives.refs.is_empty());
+        assert_eq!(directives.files.len(), 1);
+        assert_eq!(directives.files[0].r#type, Type::File);
+        assert_eq!(directives.files[0].label, "foo/bar/baz.txt");
+        assert_eq!(directives.files[0].path, path);
+        assert_eq!(directives.files[0].line_number, 1);
+        assert!(directives.dirs.is_empty());
     }
 
     #[test]
@@ -283,7 +283,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -292,14 +292,14 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert!(labels.tags.is_empty());
-        assert!(labels.refs.is_empty());
-        assert!(labels.files.is_empty());
-        assert_eq!(labels.dirs.len(), 1);
-        assert_eq!(labels.dirs[0].label_type, Type::Dir);
-        assert_eq!(labels.dirs[0].label, "foo/bar/baz");
-        assert_eq!(labels.dirs[0].path, path);
-        assert_eq!(labels.dirs[0].line_number, 1);
+        assert!(directives.tags.is_empty());
+        assert!(directives.refs.is_empty());
+        assert!(directives.files.is_empty());
+        assert_eq!(directives.dirs.len(), 1);
+        assert_eq!(directives.dirs[0].r#type, Type::Dir);
+        assert_eq!(directives.dirs[0].label, "foo/bar/baz");
+        assert_eq!(directives.dirs[0].path, path);
+        assert_eq!(directives.dirs[0].line_number, 1);
     }
 
     #[test]
@@ -318,7 +318,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -327,29 +327,29 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert_eq!(labels.tags.len(), 1);
-        assert_eq!(labels.tags[0].label_type, Type::Tag);
-        assert_eq!(labels.tags[0].label, "label");
-        assert_eq!(labels.tags[0].path, path);
-        assert_eq!(labels.tags[0].line_number, 1);
+        assert_eq!(directives.tags.len(), 1);
+        assert_eq!(directives.tags[0].r#type, Type::Tag);
+        assert_eq!(directives.tags[0].label, "label");
+        assert_eq!(directives.tags[0].path, path);
+        assert_eq!(directives.tags[0].line_number, 1);
 
-        assert_eq!(labels.refs.len(), 1);
-        assert_eq!(labels.refs[0].label_type, Type::Ref);
-        assert_eq!(labels.refs[0].label, "label");
-        assert_eq!(labels.refs[0].path, path);
-        assert_eq!(labels.refs[0].line_number, 1);
+        assert_eq!(directives.refs.len(), 1);
+        assert_eq!(directives.refs[0].r#type, Type::Ref);
+        assert_eq!(directives.refs[0].label, "label");
+        assert_eq!(directives.refs[0].path, path);
+        assert_eq!(directives.refs[0].line_number, 1);
 
-        assert_eq!(labels.files.len(), 1);
-        assert_eq!(labels.files[0].label_type, Type::File);
-        assert_eq!(labels.files[0].label, "foo/bar/baz.txt");
-        assert_eq!(labels.files[0].path, path);
-        assert_eq!(labels.files[0].line_number, 1);
+        assert_eq!(directives.files.len(), 1);
+        assert_eq!(directives.files[0].r#type, Type::File);
+        assert_eq!(directives.files[0].label, "foo/bar/baz.txt");
+        assert_eq!(directives.files[0].path, path);
+        assert_eq!(directives.files[0].line_number, 1);
 
-        assert_eq!(labels.dirs.len(), 1);
-        assert_eq!(labels.dirs[0].label_type, Type::Dir);
-        assert_eq!(labels.dirs[0].label, "foo/bar/baz");
-        assert_eq!(labels.dirs[0].path, path);
-        assert_eq!(labels.dirs[0].line_number, 1);
+        assert_eq!(directives.dirs.len(), 1);
+        assert_eq!(directives.dirs[0].r#type, Type::Dir);
+        assert_eq!(directives.dirs[0].label, "foo/bar/baz");
+        assert_eq!(directives.dirs[0].path, path);
+        assert_eq!(directives.dirs[0].line_number, 1);
     }
 
     #[test]
@@ -371,7 +371,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -380,29 +380,29 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert_eq!(labels.tags.len(), 1);
-        assert_eq!(labels.tags[0].label_type, Type::Tag);
-        assert_eq!(labels.tags[0].label, "label");
-        assert_eq!(labels.tags[0].path, path);
-        assert_eq!(labels.tags[0].line_number, 1);
+        assert_eq!(directives.tags.len(), 1);
+        assert_eq!(directives.tags[0].r#type, Type::Tag);
+        assert_eq!(directives.tags[0].label, "label");
+        assert_eq!(directives.tags[0].path, path);
+        assert_eq!(directives.tags[0].line_number, 1);
 
-        assert_eq!(labels.refs.len(), 1);
-        assert_eq!(labels.refs[0].label_type, Type::Ref);
-        assert_eq!(labels.refs[0].label, "label");
-        assert_eq!(labels.refs[0].path, path);
-        assert_eq!(labels.refs[0].line_number, 2);
+        assert_eq!(directives.refs.len(), 1);
+        assert_eq!(directives.refs[0].r#type, Type::Ref);
+        assert_eq!(directives.refs[0].label, "label");
+        assert_eq!(directives.refs[0].path, path);
+        assert_eq!(directives.refs[0].line_number, 2);
 
-        assert_eq!(labels.files.len(), 1);
-        assert_eq!(labels.files[0].label_type, Type::File);
-        assert_eq!(labels.files[0].label, "foo/bar/baz.txt");
-        assert_eq!(labels.files[0].path, path);
-        assert_eq!(labels.files[0].line_number, 3);
+        assert_eq!(directives.files.len(), 1);
+        assert_eq!(directives.files[0].r#type, Type::File);
+        assert_eq!(directives.files[0].label, "foo/bar/baz.txt");
+        assert_eq!(directives.files[0].path, path);
+        assert_eq!(directives.files[0].line_number, 3);
 
-        assert_eq!(labels.dirs.len(), 1);
-        assert_eq!(labels.dirs[0].label_type, Type::Dir);
-        assert_eq!(labels.dirs[0].label, "foo/bar/baz");
-        assert_eq!(labels.dirs[0].path, path);
-        assert_eq!(labels.dirs[0].line_number, 4);
+        assert_eq!(directives.dirs.len(), 1);
+        assert_eq!(directives.dirs[0].r#type, Type::Dir);
+        assert_eq!(directives.dirs[0].label, "foo/bar/baz");
+        assert_eq!(directives.dirs[0].path, path);
+        assert_eq!(directives.dirs[0].line_number, 4);
     }
 
     #[test]
@@ -424,7 +424,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -433,29 +433,29 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert_eq!(labels.tags.len(), 1);
-        assert_eq!(labels.tags[0].label_type, Type::Tag);
-        assert_eq!(labels.tags[0].label, "label");
-        assert_eq!(labels.tags[0].path, path);
-        assert_eq!(labels.tags[0].line_number, 1);
+        assert_eq!(directives.tags.len(), 1);
+        assert_eq!(directives.tags[0].r#type, Type::Tag);
+        assert_eq!(directives.tags[0].label, "label");
+        assert_eq!(directives.tags[0].path, path);
+        assert_eq!(directives.tags[0].line_number, 1);
 
-        assert_eq!(labels.refs.len(), 1);
-        assert_eq!(labels.refs[0].label_type, Type::Ref);
-        assert_eq!(labels.refs[0].label, "label");
-        assert_eq!(labels.refs[0].path, path);
-        assert_eq!(labels.refs[0].line_number, 2);
+        assert_eq!(directives.refs.len(), 1);
+        assert_eq!(directives.refs[0].r#type, Type::Ref);
+        assert_eq!(directives.refs[0].label, "label");
+        assert_eq!(directives.refs[0].path, path);
+        assert_eq!(directives.refs[0].line_number, 2);
 
-        assert_eq!(labels.files.len(), 1);
-        assert_eq!(labels.files[0].label_type, Type::File);
-        assert_eq!(labels.files[0].label, "foo/bar/baz.txt");
-        assert_eq!(labels.files[0].path, path);
-        assert_eq!(labels.files[0].line_number, 3);
+        assert_eq!(directives.files.len(), 1);
+        assert_eq!(directives.files[0].r#type, Type::File);
+        assert_eq!(directives.files[0].label, "foo/bar/baz.txt");
+        assert_eq!(directives.files[0].path, path);
+        assert_eq!(directives.files[0].line_number, 3);
 
-        assert_eq!(labels.dirs.len(), 1);
-        assert_eq!(labels.dirs[0].label_type, Type::Dir);
-        assert_eq!(labels.dirs[0].label, "foo/bar/baz");
-        assert_eq!(labels.dirs[0].path, path);
-        assert_eq!(labels.dirs[0].line_number, 4);
+        assert_eq!(directives.dirs.len(), 1);
+        assert_eq!(directives.dirs[0].r#type, Type::Dir);
+        assert_eq!(directives.dirs[0].label, "foo/bar/baz");
+        assert_eq!(directives.dirs[0].path, path);
+        assert_eq!(directives.dirs[0].line_number, 4);
     }
 
     #[test]
@@ -481,7 +481,7 @@ mod tests {
         let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
         let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
 
-        let labels = parse(
+        let directives = parse(
             &tag_regex,
             &ref_regex,
             &file_regex,
@@ -490,44 +490,44 @@ mod tests {
             contents.as_ref(),
         );
 
-        assert_eq!(labels.tags.len(), 2);
-        assert_eq!(labels.tags[0].label_type, Type::Tag);
-        assert_eq!(labels.tags[0].label, "label");
-        assert_eq!(labels.tags[0].path, path);
-        assert_eq!(labels.tags[0].line_number, 1);
-        assert_eq!(labels.tags[1].label_type, Type::Tag);
-        assert_eq!(labels.tags[1].label, "LABEL");
-        assert_eq!(labels.tags[1].path, path);
-        assert_eq!(labels.tags[1].line_number, 2);
+        assert_eq!(directives.tags.len(), 2);
+        assert_eq!(directives.tags[0].r#type, Type::Tag);
+        assert_eq!(directives.tags[0].label, "label");
+        assert_eq!(directives.tags[0].path, path);
+        assert_eq!(directives.tags[0].line_number, 1);
+        assert_eq!(directives.tags[1].r#type, Type::Tag);
+        assert_eq!(directives.tags[1].label, "LABEL");
+        assert_eq!(directives.tags[1].path, path);
+        assert_eq!(directives.tags[1].line_number, 2);
 
-        assert_eq!(labels.refs.len(), 2);
-        assert_eq!(labels.refs[0].label_type, Type::Ref);
-        assert_eq!(labels.refs[0].label, "label");
-        assert_eq!(labels.refs[0].path, path);
-        assert_eq!(labels.refs[0].line_number, 3);
-        assert_eq!(labels.refs[1].label_type, Type::Ref);
-        assert_eq!(labels.refs[1].label, "LABEL");
-        assert_eq!(labels.refs[1].path, path);
-        assert_eq!(labels.refs[1].line_number, 4);
+        assert_eq!(directives.refs.len(), 2);
+        assert_eq!(directives.refs[0].r#type, Type::Ref);
+        assert_eq!(directives.refs[0].label, "label");
+        assert_eq!(directives.refs[0].path, path);
+        assert_eq!(directives.refs[0].line_number, 3);
+        assert_eq!(directives.refs[1].r#type, Type::Ref);
+        assert_eq!(directives.refs[1].label, "LABEL");
+        assert_eq!(directives.refs[1].path, path);
+        assert_eq!(directives.refs[1].line_number, 4);
 
-        assert_eq!(labels.files.len(), 2);
-        assert_eq!(labels.files[0].label_type, Type::File);
-        assert_eq!(labels.files[0].label, "foo/bar/baz.txt");
-        assert_eq!(labels.files[0].path, path);
-        assert_eq!(labels.files[0].line_number, 5);
-        assert_eq!(labels.files[1].label_type, Type::File);
-        assert_eq!(labels.files[1].label, "FOO/BAR/BAZ.TXT");
-        assert_eq!(labels.files[1].path, path);
-        assert_eq!(labels.files[1].line_number, 6);
+        assert_eq!(directives.files.len(), 2);
+        assert_eq!(directives.files[0].r#type, Type::File);
+        assert_eq!(directives.files[0].label, "foo/bar/baz.txt");
+        assert_eq!(directives.files[0].path, path);
+        assert_eq!(directives.files[0].line_number, 5);
+        assert_eq!(directives.files[1].r#type, Type::File);
+        assert_eq!(directives.files[1].label, "FOO/BAR/BAZ.TXT");
+        assert_eq!(directives.files[1].path, path);
+        assert_eq!(directives.files[1].line_number, 6);
 
-        assert_eq!(labels.dirs.len(), 2);
-        assert_eq!(labels.dirs[0].label_type, Type::Dir);
-        assert_eq!(labels.dirs[0].label, "foo/bar/baz");
-        assert_eq!(labels.dirs[0].path, path);
-        assert_eq!(labels.dirs[0].line_number, 7);
-        assert_eq!(labels.dirs[1].label_type, Type::Dir);
-        assert_eq!(labels.dirs[1].label, "FOO/BAR/BAZ");
-        assert_eq!(labels.dirs[1].path, path);
-        assert_eq!(labels.dirs[1].line_number, 8);
+        assert_eq!(directives.dirs.len(), 2);
+        assert_eq!(directives.dirs[0].r#type, Type::Dir);
+        assert_eq!(directives.dirs[0].label, "foo/bar/baz");
+        assert_eq!(directives.dirs[0].path, path);
+        assert_eq!(directives.dirs[0].line_number, 7);
+        assert_eq!(directives.dirs[1].r#type, Type::Dir);
+        assert_eq!(directives.dirs[1].label, "FOO/BAR/BAZ");
+        assert_eq!(directives.dirs[1].path, path);
+        assert_eq!(directives.dirs[1].line_number, 8);
     }
 }
