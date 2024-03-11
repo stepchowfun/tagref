@@ -4,7 +4,7 @@
 
 ![Welcome to Tagref.](https://raw.githubusercontent.com/stepchowfun/tagref/main/tagref.svg?sanitize=true)
 
-*Tagref* helps you manage cross-references in your code. You can use it to help keep things in sync, document assumptions, maintain invariants, etc. Airbnb uses it for their front-end monorepo. You can use it too!
+*Tagref* helps you manage cross-references in your code. You can use it to help keep things in sync, document assumptions, maintain invariants, etc. Airbnb, Notion, and Watershed use it. You can use it too!
 
 Tagref works with any programming language, and it respects your `.gitignore` file as well as other common filter files. It's recommended to set up Tagref as an automated continuous integration (CI) check. Tagref is fast and almost certainly won't be the bottleneck in your CI.
 
