@@ -209,22 +209,22 @@ fn entry() -> Result<(), String> {
 
     // Compile the regular expressions in advance.
     let tag_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
         escape(&settings.tag_sigil),
     ))
     .unwrap(); // Safe by manual inspection
     let ref_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
         escape(&settings.ref_sigil),
     ))
     .unwrap(); // Safe by manual inspection
     let file_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
         escape(&settings.file_sigil),
     ))
     .unwrap(); // Safe by manual inspection
     let dir_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*([^\\]\\s]*)\\s*\\]",
+        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
         escape(&settings.dir_sigil),
     ))
     .unwrap(); // Safe by manual inspection
