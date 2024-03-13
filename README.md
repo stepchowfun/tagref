@@ -10,17 +10,35 @@ Tagref works with any programming language, and it respects your `.gitignore` fi
 
 ## What is it?
 
-Tagref allows you to annotate your code with *tags* (in comments) which can be *referenced* from other parts of the codebase. For example, you might have a tag like this:
+Tagref allows you to annotate your code with *tags* (in comments) which can be *referenced* from other parts of the codebase.
+
+Here's an example in Python. The `polynomial` function below returns a nonzero number:
 
 ```python
-# [tag:cities_nonempty] There should be at least one city here.
-cities = ['San Francisco', 'Tokyo']
+def polynomial(x):
+    return x ** 2 + 1
 ```
 
-Elsewhere, suppose you're writing some code which depends on that fact. You can make that clear by referencing the tag:
+Suppose you want to use that function somewhere (possibly in a different file), and your code relies on the fact that it never returns zero:
 
 ```python
-first_city = cities[0] # This is safe due to [ref:cities_nonempty].
+def inverse_polynomial(x):
+    return 1 / polynomial(x)
+```
+
+It's natural to feel a bit uncomfortable with that. If someone changes the definition of `polynomial`, your code might raise a `ZeroDivisionError`! So you add a tag where `polynomial` is defined:
+
+```python
+# [tag:polynomial_nonzero] This function never returns zero.
+def polynomial(x):
+    return x ** 2 + 1
+```
+
+Now you can reference the tag in your code:
+
+```python
+def inverse_polynomial(x):
+    return 1 / polynomial(x) # This is safe due to [ref:polynomial_nonzero].
 ```
 
 To help you manage these tags and references, Tagref checks the following:
@@ -28,7 +46,7 @@ To help you manage these tags and references, Tagref checks the following:
 1. References actually point to tags. A tag cannot be deleted or renamed without updating the references that point to it.
 2. Tags are unique. There is never any ambiguity about which tag is being referenced.
 
-In the example above, Tagref doesn't ensure that `cities` is actually non-empty. It isn't magic! It only checks the two criteria above.
+In the example above, Tagref doesn't guarantee that `polynomial` returns a nonzero number. It isn't magic! It only ensures that the `polynomial_nonzero` tag exists unambiguously. The programmer is still responsible for keeping the comments in sync with the code.
 
 In addition to references to tags, Tagref also supports *file references* and *directory references*. A file reference guarantees that the given file exists. For example:
 
@@ -41,6 +59,12 @@ A directory reference guarantees that the given directory exists. For example:
 ```python
 # This script will format the files in [dir:src].
 ```
+
+## Tag names
+
+The name of a tag may consist of any UTF-8 text except whitespace and the right square bracket `]`. For example, `[tag:foo_bar]` and `[tag:ほげ〜ふが]` are valid, but `[tag:foo bar]` is not. Tag names are case-sensitive, so `[tag:foo]` and `[tag:Foo]` are different tags.
+
+You can use any naming convention you like. The Tagref authors prefer to use lowercase words separated by underscores `_`, like `[tag:important_note]`.
 
 ## Usage
 
