@@ -1,6 +1,6 @@
 [package]
 name = "tagref"
-version = "1.9.1"
+version = "1.10.0"
 authors = ["Stephan Boyer <stephan@stephanboyer.com>"]
 edition = "2021"
 description = "Tagref helps you maintain cross-references in your code."
