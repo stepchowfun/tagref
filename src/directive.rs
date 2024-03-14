@@ -1,5 +1,5 @@
 use {
-    regex::Regex,
+    regex::{escape, Regex},
     std::{
         fmt,
         io::BufRead,
@@ -48,6 +48,15 @@ pub struct Directives {
     pub refs: Vec<Directive>,
     pub files: Vec<Directive>,
     pub dirs: Vec<Directive>,
+}
+
+// This function compiles a regular expression for matching a directive.
+pub fn compile_directive_regex(sigil: &str) -> Regex {
+    Regex::new(&format!(
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]]*?)\\s*\\]",
+        escape(sigil),
+    ))
+    .unwrap() // Safe by manual inspection
 }
 
 // This function returns all the directives in a file for a given type.
@@ -127,25 +136,19 @@ pub fn parse<R: BufRead>(
 #[cfg(test)]
 mod tests {
     use {
-        crate::directive::{parse, Type},
-        regex::Regex,
+        crate::directive::{compile_directive_regex, parse, Type},
         std::path::Path,
     };
-
-    const TAG_REGEX: &str = "(?i)\\[\\s*tag\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
-    const REF_REGEX: &str = "(?i)\\[\\s*ref\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
-    const FILE_REGEX: &str = "(?i)\\[\\s*file\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
-    const DIR_REGEX: &str = "(?i)\\[\\s*dir\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
 
     #[test]
     fn parse_empty() {
         let path = Path::new("file.rs").to_owned();
         let contents = b"" as &[u8];
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -173,10 +176,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -208,10 +211,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -243,10 +246,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -278,10 +281,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -313,10 +316,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -366,10 +369,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -419,10 +422,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
@@ -476,10 +479,10 @@ mod tests {
         .as_bytes()
         .to_owned();
 
-        let tag_regex: Regex = Regex::new(TAG_REGEX).unwrap();
-        let ref_regex: Regex = Regex::new(REF_REGEX).unwrap();
-        let file_regex: Regex = Regex::new(FILE_REGEX).unwrap();
-        let dir_regex: Regex = Regex::new(DIR_REGEX).unwrap();
+        let tag_regex = compile_directive_regex("tag");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
