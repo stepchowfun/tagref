@@ -207,24 +207,29 @@ fn entry() -> Result<(), String> {
     // Parse the command-line options.
     let settings = settings();
 
-    // Compile the regular expressions in advance.
+    // [tag:directive_regex] Compile the regular expressions in
+    // advance. The string literal used here in the format macro is
+    // also used in other places. IF you change the literal, make sure
+    // to change all references to the tag as well. See:
+    // https://github.com/rust-lang/rust/issues/69133 for why format
+    // needs a string literal.
     let tag_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]]*?)\\s*\\]", // [ref:directive_regex]
         escape(&settings.tag_sigil),
     ))
     .unwrap(); // Safe by manual inspection
     let ref_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]]*?)\\s*\\]", // [ref:directive_regex]
         escape(&settings.ref_sigil),
     ))
     .unwrap(); // Safe by manual inspection
     let file_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]]*?)\\s*\\]", // [ref:directive_regex]
         escape(&settings.file_sigil),
     ))
     .unwrap(); // Safe by manual inspection
     let dir_regex: Regex = Regex::new(&format!(
-        "(?i)\\[\\s*{}\\s*:\\s*(.+?)\\s*\\]", // [ref:identifier_regex_fmt_str]
+        "(?i)\\[\\s*{}\\s*:\\s*([^\\]]*?)\\s*\\]", // [ref:directive_regex]
         escape(&settings.dir_sigil),
     ))
     .unwrap(); // Safe by manual inspection

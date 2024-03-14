@@ -132,10 +132,10 @@ mod tests {
         std::path::Path,
     };
 
-    const TAG_REGEX: &str = "(?i)\\[\\s*tag\\s*:\\s*([^\\]\\s]*)\\s*\\]";
-    const REF_REGEX: &str = "(?i)\\[\\s*ref\\s*:\\s*([^\\]\\s]*)\\s*\\]";
-    const FILE_REGEX: &str = "(?i)\\[\\s*file\\s*:\\s*([^\\]\\s]*)\\s*\\]";
-    const DIR_REGEX: &str = "(?i)\\[\\s*dir\\s*:\\s*([^\\]\\s]*)\\s*\\]";
+    const TAG_REGEX: &str = "(?i)\\[\\s*tag\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
+    const REF_REGEX: &str = "(?i)\\[\\s*ref\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
+    const FILE_REGEX: &str = "(?i)\\[\\s*file\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
+    const DIR_REGEX: &str = "(?i)\\[\\s*dir\\s*:\\s*([^\\]]*?)\\s*\\]"; // [ref:directive_regex]
 
     #[test]
     fn parse_empty() {
@@ -409,10 +409,10 @@ mod tests {
     fn parse_whitespace() {
         let path = Path::new("file.rs").to_owned();
         let contents = r"
-      [  ?tag   :  label            ]
-      [  ?ref   :  label            ]
-      [  ?file  :  foo/bar/baz.txt  ]
-      [  ?dir   :  foo/bar/baz      ]
+      [  ?tag   :  foo  bar               ]
+      [  ?ref   :  foo  bar               ]
+      [  ?file  :  foo  bar/baz  qux.txt  ]
+      [  ?dir   :  foo  bar/baz  qux      ]
     "
         .trim()
         .replace('?', "")
@@ -435,25 +435,25 @@ mod tests {
 
         assert_eq!(directives.tags.len(), 1);
         assert_eq!(directives.tags[0].r#type, Type::Tag);
-        assert_eq!(directives.tags[0].label, "label");
+        assert_eq!(directives.tags[0].label, "foo  bar");
         assert_eq!(directives.tags[0].path, path);
         assert_eq!(directives.tags[0].line_number, 1);
 
         assert_eq!(directives.refs.len(), 1);
         assert_eq!(directives.refs[0].r#type, Type::Ref);
-        assert_eq!(directives.refs[0].label, "label");
+        assert_eq!(directives.refs[0].label, "foo  bar");
         assert_eq!(directives.refs[0].path, path);
         assert_eq!(directives.refs[0].line_number, 2);
 
         assert_eq!(directives.files.len(), 1);
         assert_eq!(directives.files[0].r#type, Type::File);
-        assert_eq!(directives.files[0].label, "foo/bar/baz.txt");
+        assert_eq!(directives.files[0].label, "foo  bar/baz  qux.txt");
         assert_eq!(directives.files[0].path, path);
         assert_eq!(directives.files[0].line_number, 3);
 
         assert_eq!(directives.dirs.len(), 1);
         assert_eq!(directives.dirs[0].r#type, Type::Dir);
-        assert_eq!(directives.dirs[0].label, "foo/bar/baz");
+        assert_eq!(directives.dirs[0].label, "foo  bar/baz  qux");
         assert_eq!(directives.dirs[0].path, path);
         assert_eq!(directives.dirs[0].line_number, 4);
     }

@@ -62,7 +62,7 @@ A directory reference guarantees that the given directory exists. For example:
 
 ## Tag names
 
-The name of a tag may consist of any UTF-8 text except whitespace and the right square bracket `]`. For example, `[tag:foo_bar]` and `[tag:ほげ〜ふが]` are valid, but `[tag:foo bar]` is not. Tag names are case-sensitive, so `[tag:foo]` and `[tag:Foo]` are different tags.
+The name of a tag may consist of any UTF-8 text except whitespace and the right square bracket `]`. Internal whitespace (as in `[tag:foo bar]`) is allowed, and surrounding whitespace (as in `[tag: baz ]`) is ignored. More examples of valid tags: `[tag:foo_bar]` and `[tag:ほげ〜ふが]`. Tag names are case-sensitive, so `[tag:foo]` and `[tag:Foo]` are different tags.
 
 You can use any naming convention you like. The Tagref authors prefer to use lowercase words separated by underscores `_`, like `[tag:important_note]`.
 
