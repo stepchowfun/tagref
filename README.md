@@ -12,31 +12,13 @@ Tagref works with any programming language, and it respects your `.gitignore` fi
 
 Tagref allows you to annotate your code with *tags* (in comments) which can be *referenced* from other parts of the codebase.
 
-Here's an example in Python. The `polynomial` function below returns a nonzero number:
-
-```python
-def polynomial(x):
-    return x ** 2 + 1
-```
-
-Suppose you want to use that function somewhere (possibly in a different file), and your code relies on the fact that it never returns zero:
-
-```python
-def inverse_polynomial(x):
-    return 1 / polynomial(x)
-```
-
-It's natural to feel a bit uncomfortable with that. If someone changes the definition of `polynomial`, your code might raise a `ZeroDivisionError`! So you add a tag where `polynomial` is defined:
+Here's an example in Python:
 
 ```python
 # [tag:polynomial_nonzero] This function never returns zero.
 def polynomial(x):
     return x ** 2 + 1
-```
 
-Now you can reference the tag in your code:
-
-```python
 def inverse_polynomial(x):
     return 1 / polynomial(x) # This is safe due to [ref:polynomial_nonzero].
 ```
