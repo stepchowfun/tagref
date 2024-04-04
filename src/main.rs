@@ -92,7 +92,8 @@ fn settings() -> Settings {
                 .long(PATH_OPTION)
                 .help("Adds the path of a directory to scan")
                 .default_value(".") // [tag:path_default]
-                .multiple(true),
+                .multiple(true)
+                .number_of_values(1),
         )
         .arg(
             Arg::with_name(TAG_SIGIL_OPTION)
