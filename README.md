@@ -42,6 +42,8 @@ A directory reference guarantees that the given directory exists. For example:
 # This script will format the files in [dir:src].
 ```
 
+File and directory paths are relative to the working directory, which is typically the root of the project or repository.
+
 ## Tag names
 
 The name of a tag may consist of any UTF-8 text except the right square bracket `]`. Internal whitespace (as in `[tag:foo bar]`) is allowed, and surrounding whitespace (as in `[tag: baz ]`) is ignored. Tag names are case-sensitive, so `[tag:foo]` and `[tag:Foo]` are different tags.
