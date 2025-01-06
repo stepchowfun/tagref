@@ -1,5 +1,7 @@
 # Tagref
 
+[![Build status](https://github.com/stepchowfun/tagref/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/stepchowfun/tagref/actions?query=branch%3Amain)
+
 ![Welcome to Tagref.](https://raw.githubusercontent.com/stepchowfun/tagref/main/tagref.svg?sanitize=true)
 
 *Tagref* helps you manage cross-references in your code. You can use it to help keep things in sync, document assumptions, maintain invariants, etc. [Airbnb](https://www.airbnb.com/), [Notion](https://www.notion.so/), and [Watershed](https://watershed.com/) use it to level up their code health. You can use it too!
