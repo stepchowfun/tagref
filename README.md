@@ -171,4 +171,4 @@ If you happen to have Rust installed, make sure it's up-to-date since pre-commit
 
 ## Acknowledgements
 
-The idea for Tagref was inspired by [the GHC notes convention](https://ghc.haskell.org/trac/ghc/wiki/Commentary/CodingStyle#Commentsinthesourcecode). [This article](http://www.aosabook.org/en/ghc.html) has more insights into how the GHC developers manage their codebase.
+The idea for Tagref was inspired by the [GHC](https://www.haskell.org/ghc/) notes convention. [This article](http://www.aosabook.org/en/ghc.html) (§5.6) has more insights into how the GHC developers manage their codebase.
