@@ -2,7 +2,7 @@
 name = "tagref"
 version = "1.10.0"
 authors = ["Stephan Boyer <stephan@stephanboyer.com>"]
-edition = "2021"
+edition = "2024"
 description = "Tagref helps you maintain cross-references in your code."
 license = "MIT"
 documentation = "https://github.com/stepchowfun/tagref"
