@@ -1,5 +1,5 @@
 use {
-    regex::{escape, Regex},
+    regex::{Regex, escape},
     std::{
         fmt,
         io::BufRead,
@@ -136,7 +136,7 @@ pub fn parse<R: BufRead>(
 #[cfg(test)]
 mod tests {
     use {
-        crate::directive::{compile_directive_regex, parse, Type},
+        crate::directive::{Type, compile_directive_regex, parse},
         std::path::Path,
     };
 

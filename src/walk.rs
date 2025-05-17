@@ -1,11 +1,11 @@
 use {
-    ignore::{overrides::OverrideBuilder, WalkBuilder, WalkState},
+    ignore::{WalkBuilder, WalkState, overrides::OverrideBuilder},
     std::{
         fs::File,
         path::{Path, PathBuf},
         sync::{
-            atomic::{AtomicUsize, Ordering},
             Arc,
+            atomic::{AtomicUsize, Ordering},
         },
     },
 };
