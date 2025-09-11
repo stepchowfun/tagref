@@ -275,7 +275,6 @@ dependencies = [
 name = "tagref"
 version = "1.10.0"
 dependencies = [
- "atty",
  "clap",
  "colored",
  "ignore",

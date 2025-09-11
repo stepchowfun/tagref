@@ -7,13 +7,12 @@ mod tag_references;
 mod walk;
 
 use {
-    atty::Stream,
     clap::{App, AppSettings, Arg, SubCommand},
     colored::Colorize,
     directive::compile_directive_regex,
     std::{
         collections::{HashMap, HashSet},
-        io::BufReader,
+        io::{self, BufReader, IsTerminal},
         path::{Path, PathBuf},
         process::exit,
         sync::{Arc, Mutex},
@@ -203,8 +202,7 @@ fn settings() -> Settings {
 #[allow(clippy::too_many_lines)]
 fn entry() -> Result<(), String> {
     // Determine whether to print colored output.
-    colored::control::set_override(atty::is(Stream::Stdout));
-
+    colored::control::set_override(io::stdout().is_terminal());
     // Parse the command-line options.
     let settings = settings();
 
