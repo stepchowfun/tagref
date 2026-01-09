@@ -169,6 +169,10 @@ repos:
 
 If you happen to have Rust installed, make sure it's up-to-date since pre-commit will use it to install Tagref. If you don't already have Rust, pre-commit will install it for you.
 
+## Editor integrations
+
+- [tagref.el](https://github.com/vedang/tagref.el): An Emacs minor mode with tag/reference completion, xref-based navigation, and validation support.
+
 ## Acknowledgements
 
 The idea for Tagref was inspired by the GHC *notes* system described in [this article](http://www.aosabook.org/en/ghc.html) (§5.6).
