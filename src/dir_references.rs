@@ -1,7 +1,7 @@
 use {crate::directive::Directive, std::fs::metadata};
 
-// This function checks that directory references actually point to files. It returns a vector of
-// error strings.
+// This function checks that directory references actually point to directories. It returns a vector
+// of error strings.
 pub fn check(refs: &[Directive]) -> Vec<String> {
     let mut errors = Vec::<String>::new();
 
