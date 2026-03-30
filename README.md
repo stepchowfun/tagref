@@ -55,53 +55,39 @@ You can use any naming convention you like. The Tagref authors prefer to use low
 The easiest way to use Tagref is to run the `tagref` command with no arguments. It will recursively scan the working directory and check all the tags and references. Here are the supported command-line options:
 
 ```
-USAGE:
-    tagref [SUBCOMMAND]
+Usage: tagref [OPTIONS] [COMMAND]
 
-OPTIONS:
-    -d, --dir-sigil <DIR_SIGIL>
-            Sets the sigil used for directory references [default: dir]
+Commands:
+  check
+          Checks all the tags and references (default)
+  list-tags
+          Lists all the tags
+  list-refs
+          Lists all the tag references
+  list-files
+          Lists all the file references
+  list-dirs
+          Lists all the directory references
+  list-unused
+          Lists the unreferenced tags
+  help
+          Print this message or the help of the given subcommand(s)
 
-    -f, --file-sigil <FILE_SIGIL>
-            Sets the sigil used for file references [default: file]
-
-    -h, --help
-            Prints help information
-
-    -p, --path <PATH>...
-            Adds the path of a directory to scan [default: .]
-
-    -r, --ref-sigil <REF_SIGIL>
-            Sets the sigil used for tag references [default: ref]
-
-    -t, --tag-sigil <TAG_SIGIL>
-            Sets the sigil used for tags [default: tag]
-
-    -v, --version
-            Prints version information
-
-
-SUBCOMMANDS:
-    check
-            Checks all the tags and references (default)
-
-    help
-            Prints this message or the help of the given subcommand(s)
-
-    list-dirs
-            Lists all the directory references
-
-    list-files
-            Lists all the file references
-
-    list-refs
-            Lists all the tag references
-
-    list-tags
-            Lists all the tags
-
-    list-unused
-            Lists the unreferenced tags
+Options:
+  -v, --version
+          Print version information
+  -p, --path <PATH>
+          Adds the path of a directory to scan [default: .]
+  -t, --tag-sigil <TAG_SIGIL>
+          Sets the sigil used for tags [default: tag]
+  -r, --ref-sigil <REF_SIGIL>
+          Sets the sigil used for tag references [default: ref]
+  -f, --file-sigil <FILE_SIGIL>
+          Sets the sigil used for file references [default: file]
+  -d, --dir-sigil <DIR_SIGIL>
+          Sets the sigil used for directory references [default: dir]
+  -h, --help
+          Print help
 ```
 
 ## Installation instructions

@@ -7,7 +7,7 @@ mod tag_references;
 mod walk;
 
 use {
-    clap::{App, AppSettings, Arg, SubCommand},
+    clap::{Arg, ArgAction, Command},
     colored::Colorize,
     directive::compile_directive_regex,
     std::{
@@ -61,9 +61,8 @@ pub struct Settings {
 #[allow(clippy::too_many_lines)]
 fn settings() -> Settings {
     // Set up the command-line interface.
-    let matches = App::new("Tagref")
+    let matches = Command::new("Tagref")
         .version(VERSION)
-        .version_short("v")
         .author("Stephan Boyer <stephan@stephanboyer.com>")
         .about(
             "\
@@ -78,113 +77,120 @@ fn settings() -> Settings {
              For more information, visit https://github.com/stepchowfun/tagref.\
              "
             .replace('?', "")
-            .trim(),
+            .trim()
+            .to_owned(),
         )
-        .setting(AppSettings::ColoredHelp)
-        .setting(AppSettings::NextLineHelp)
-        .setting(AppSettings::UnifiedHelpMessage)
-        .setting(AppSettings::VersionlessSubcommands)
+        .disable_version_flag(true)
+        .next_line_help(true)
         .arg(
-            Arg::with_name(PATH_OPTION)
+            Arg::new("version")
+                .short('v')
+                .long("version")
+                .help("Print version information")
+                .action(ArgAction::Version),
+        )
+        .arg(
+            Arg::new(PATH_OPTION)
                 .value_name("PATH")
-                .short("p")
+                .short('p')
                 .long(PATH_OPTION)
                 .help("Adds the path of a directory to scan")
                 .default_value(".") // [tag:path_default]
-                .multiple(true)
-                .number_of_values(1),
+                .action(ArgAction::Append),
         )
         .arg(
-            Arg::with_name(TAG_SIGIL_OPTION)
+            Arg::new(TAG_SIGIL_OPTION)
                 .value_name("TAG_SIGIL")
-                .short("t")
+                .short('t')
                 .long(TAG_SIGIL_OPTION)
                 .help("Sets the sigil used for tags")
                 .default_value("tag"), // [tag:tag_sigil_default]
         )
         .arg(
-            Arg::with_name(REF_SIGIL_OPTION)
+            Arg::new(REF_SIGIL_OPTION)
                 .value_name("REF_SIGIL")
-                .short("r")
+                .short('r')
                 .long(REF_SIGIL_OPTION)
                 .help("Sets the sigil used for tag references")
                 .default_value("ref"), // [tag:ref_sigil_default]
         )
         .arg(
-            Arg::with_name(FILE_SIGIL_OPTION)
+            Arg::new(FILE_SIGIL_OPTION)
                 .value_name("FILE_SIGIL")
-                .short("f")
+                .short('f')
                 .long(FILE_SIGIL_OPTION)
                 .help("Sets the sigil used for file references")
                 .default_value("file"), // [tag:file_sigil_default]
         )
         .arg(
-            Arg::with_name(DIR_SIGIL_OPTION)
+            Arg::new(DIR_SIGIL_OPTION)
                 .value_name("DIR_SIGIL")
-                .short("d")
+                .short('d')
                 .long(DIR_SIGIL_OPTION)
                 .help("Sets the sigil used for directory references")
                 .default_value("dir"), // [tag:dir_sigil_default]
         )
         .subcommand(
-            SubCommand::with_name(CHECK_SUBCOMMAND)
-                .about("Checks all the tags and references (default)"),
+            Command::new(CHECK_SUBCOMMAND).about("Checks all the tags and references (default)"),
         )
-        .subcommand(SubCommand::with_name(LIST_TAGS_SUBCOMMAND).about("Lists all the tags"))
+        .subcommand(Command::new(LIST_TAGS_SUBCOMMAND).about("Lists all the tags"))
+        .subcommand(Command::new(LIST_REFS_SUBCOMMAND).about("Lists all the tag references"))
+        .subcommand(Command::new(LIST_FILES_SUBCOMMAND).about("Lists all the file references"))
+        .subcommand(Command::new(LIST_DIRS_SUBCOMMAND).about("Lists all the directory references"))
         .subcommand(
-            SubCommand::with_name(LIST_REFS_SUBCOMMAND).about("Lists all the tag references"),
-        )
-        .subcommand(
-            SubCommand::with_name(LIST_FILES_SUBCOMMAND).about("Lists all the file references"),
-        )
-        .subcommand(
-            SubCommand::with_name(LIST_DIRS_SUBCOMMAND).about("Lists all the directory references"),
-        )
-        .subcommand(
-            SubCommand::with_name(LIST_UNUSED_SUBCOMMAND)
+            Command::new(LIST_UNUSED_SUBCOMMAND)
                 .about("Lists the unreferenced tags")
                 .arg(
-                    Arg::with_name(LIST_UNUSED_ERROR_OPTION)
+                    Arg::new(LIST_UNUSED_ERROR_OPTION)
                         .long(LIST_UNUSED_ERROR_OPTION)
-                        .help("Exits with an error status code if any tags are unreferenced"),
+                        .help("Exits with an error status code if any tags are unreferenced")
+                        .action(ArgAction::SetTrue),
                 ),
         )
         .get_matches();
 
     // Determine which paths to scan. The `unwrap` is safe due to [ref:path_default].
     let paths = matches
-        .values_of(PATH_OPTION)
+        .get_many::<String>(PATH_OPTION)
         .unwrap()
         .map(|path| Path::new(path).to_owned())
         .collect::<Vec<_>>();
 
     // Determine the tag sigil. The `unwrap` is safe due to [ref:tag_sigil_default].
-    let tag_sigil = matches.value_of(TAG_SIGIL_OPTION).unwrap().to_owned();
+    let tag_sigil = matches
+        .get_one::<String>(TAG_SIGIL_OPTION)
+        .unwrap()
+        .to_owned();
 
     // Determine the ref sigil. The `unwrap` is safe due to [ref:ref_sigil_default].
-    let ref_sigil = matches.value_of(REF_SIGIL_OPTION).unwrap().to_owned();
+    let ref_sigil = matches
+        .get_one::<String>(REF_SIGIL_OPTION)
+        .unwrap()
+        .to_owned();
 
     // Determine the file sigil. The `unwrap` is safe due to [ref:file_sigil_default].
-    let file_sigil = matches.value_of(FILE_SIGIL_OPTION).unwrap().to_owned();
+    let file_sigil = matches
+        .get_one::<String>(FILE_SIGIL_OPTION)
+        .unwrap()
+        .to_owned();
 
     // Determine the directory sigil. The `unwrap` is safe due to [ref:dir_sigil_default].
-    let dir_sigil = matches.value_of(DIR_SIGIL_OPTION).unwrap().to_owned();
+    let dir_sigil = matches
+        .get_one::<String>(DIR_SIGIL_OPTION)
+        .unwrap()
+        .to_owned();
 
     // Determine the subcommand.
-    let subcommand = match matches.subcommand_name() {
-        Some(CHECK_SUBCOMMAND) | None => Subcommand::Check,
-        Some(LIST_TAGS_SUBCOMMAND) => Subcommand::ListTags,
-        Some(LIST_REFS_SUBCOMMAND) => Subcommand::ListRefs,
-        Some(LIST_FILES_SUBCOMMAND) => Subcommand::ListFiles,
-        Some(LIST_DIRS_SUBCOMMAND) => Subcommand::ListDirs,
-        Some(LIST_UNUSED_SUBCOMMAND) => Subcommand::ListUnused(
-            matches
-                .subcommand
-                .unwrap() // Safe because we're _in_ a subcommand
-                .matches
-                .is_present(LIST_UNUSED_ERROR_OPTION),
-        ),
-        Some(&_) => panic!("Unimplemented subcommand."),
+    let subcommand = match matches.subcommand() {
+        Some((CHECK_SUBCOMMAND, _)) | None => Subcommand::Check,
+        Some((LIST_TAGS_SUBCOMMAND, _)) => Subcommand::ListTags,
+        Some((LIST_REFS_SUBCOMMAND, _)) => Subcommand::ListRefs,
+        Some((LIST_FILES_SUBCOMMAND, _)) => Subcommand::ListFiles,
+        Some((LIST_DIRS_SUBCOMMAND, _)) => Subcommand::ListDirs,
+        Some((LIST_UNUSED_SUBCOMMAND, subcommand_matches)) => {
+            Subcommand::ListUnused(subcommand_matches.get_flag(LIST_UNUSED_ERROR_OPTION))
+        }
+        Some((subcommand, _)) => panic!("Unimplemented subcommand: {subcommand}."),
     };
 
     // Return the command-line options.
