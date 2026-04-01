@@ -46,7 +46,7 @@ File and directory paths are relative to the working directory, which is typical
 
 ## Tag names
 
-The name of a tag may consist of any UTF-8 text except the right square bracket `]`. Internal whitespace (as in `[tag:foo bar]`) is allowed, and surrounding whitespace (as in `[tag: baz ]`) is ignored. Tag names are case-sensitive, so `[tag:foo]` and `[tag:Foo]` are different tags.
+The name of a tag may consist of any UTF-8 text except the right square bracket `]`. Internal whitespace (as in `[tag:foo bar]`) is allowed, and surrounding whitespace (as in `[tag: baz ]`) is ignored. Tag names are case-sensitive, so `[tag:qux]` and `[tag:Qux]` are different tags.
 
 You can use any naming convention you like. The Tagref authors prefer to use lowercase words separated by underscores `_`, like `[tag:important_note]`.
 
@@ -58,36 +58,22 @@ The easiest way to use Tagref is to run the `tagref` command with no arguments. 
 Usage: tagref [OPTIONS] [COMMAND]
 
 Commands:
-  check
-          Checks all the tags and references (default)
-  list-tags
-          Lists all the tags
-  list-refs
-          Lists all the tag references
-  list-files
-          Lists all the file references
-  list-dirs
-          Lists all the directory references
-  list-unused
-          Lists the unreferenced tags
-  help
-          Print this message or the help of the given subcommand(s)
+  check        Check all the tags and references (default)
+  list-tags    List all the tags
+  list-refs    List all the tag references
+  list-files   List all the file references
+  list-dirs    List all the directory references
+  list-unused  List the unreferenced tags
+  help         Print this message or the help of the given subcommand(s)
 
 Options:
-  -v, --version
-          Print version information
-  -p, --path <PATH>
-          Adds the path of a directory to scan [default: .]
-  -t, --tag-sigil <TAG_SIGIL>
-          Sets the sigil used for tags [default: tag]
-  -r, --ref-sigil <REF_SIGIL>
-          Sets the sigil used for tag references [default: ref]
-  -f, --file-sigil <FILE_SIGIL>
-          Sets the sigil used for file references [default: file]
-  -d, --dir-sigil <DIR_SIGIL>
-          Sets the sigil used for directory references [default: dir]
-  -h, --help
-          Print help
+  -v, --version                  Print version
+  -p, --path <PATH>              Add the path to a directory to scan [default: .]
+  -t, --tag-sigil <TAG_SIGIL>    Set the sigil used for tags [default: tag]
+  -r, --ref-sigil <REF_SIGIL>    Set the sigil used for tag references [default: ref]
+  -f, --file-sigil <FILE_SIGIL>  Set the sigil used for file references [default: file]
+  -d, --dir-sigil <DIR_SIGIL>    Set the sigil used for directory references [default: dir]
+  -h, --help                     Print help
 ```
 
 ## Installation instructions
