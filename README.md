@@ -148,3 +148,13 @@ If you happen to have Rust installed, make sure it's up-to-date since pre-commit
 ## Acknowledgements
 
 The idea for Tagref was inspired by the GHC *notes* system described in [this article](http://www.aosabook.org/en/ghc.html) (§5.6).
+
+<!-- 
+  Reference the tags defined above so that `tagref list-unused --fail-if-any` succeeds.
+
+  - [ref:important_note]
+  - [ref:qux]
+  - [ref:Qux]
+  - [ref:foo bar]
+  - [ref:baz]
+-->
