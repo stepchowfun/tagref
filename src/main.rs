@@ -7,195 +7,111 @@ mod tag_references;
 mod walk;
 
 use {
-    clap::{App, AppSettings, Arg, SubCommand},
+    clap::{ArgAction, Args, Parser, Subcommand as ClapSubcommand},
     colored::Colorize,
     directive::compile_directive_regex,
     std::{
         collections::{HashMap, HashSet},
         io::{self, BufReader, IsTerminal},
-        path::{Path, PathBuf},
+        path::PathBuf,
         process::exit,
         sync::{Arc, Mutex},
     },
 };
 
-// The program version
-const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-// Command-line option and subcommand names
-const CHECK_SUBCOMMAND: &str = "check";
-const LIST_TAGS_SUBCOMMAND: &str = "list-tags";
-const LIST_REFS_SUBCOMMAND: &str = "list-refs";
-const LIST_FILES_SUBCOMMAND: &str = "list-files";
-const LIST_DIRS_SUBCOMMAND: &str = "list-dirs";
-const LIST_UNUSED_SUBCOMMAND: &str = "list-unused";
-const LIST_UNUSED_ERROR_OPTION: &str = "fail-if-any"; // [tag:fail_if_any]
-const PATH_OPTION: &str = "path";
-const TAG_SIGIL_OPTION: &str = "tag-sigil";
-const REF_SIGIL_OPTION: &str = "ref-sigil";
-const FILE_SIGIL_OPTION: &str = "file-sigil";
-const DIR_SIGIL_OPTION: &str = "dir-sigil";
-
-// This enum represents the subcommands.
-enum Subcommand {
-    Check,
-    ListTags,
-    ListRefs,
-    ListFiles,
-    ListDirs,
-    ListUnused(bool), // [ref:fail_if_any]
-}
-
 // This struct represents the command-line arguments.
-#[allow(clippy::struct_excessive_bools)]
-pub struct Settings {
+#[derive(Parser)]
+#[command(
+    about = concat!(
+        env!("CARGO_PKG_DESCRIPTION"),
+        "\n\n",
+        "You can annotate your code with tags like [tag:foo] and reference them like [ref:foo]. ",
+        "You can also reference files like [file:src/main.rs] and directories like [dir:src]. ",
+        "Tagref checks that tags are unique and that references are not dangling.\n\n",
+        "More information can be found at: ",
+        env!("CARGO_PKG_HOMEPAGE"),
+    ),
+    version,
+    disable_version_flag = true
+)]
+struct Cli {
+    #[arg(short, long, help = "Print version", action = ArgAction::Version)]
+    _version: Option<bool>,
+
+    #[arg(
+        short,
+        long = "path",
+        value_name = "PATH",
+        help = "Add the path to a directory to scan",
+        default_value = ".",
+        action = ArgAction::Append
+    )]
     paths: Vec<PathBuf>,
+
+    #[arg(
+        short,
+        long,
+        help = "Set the sigil used for tags",
+        default_value = "tag"
+    )]
     tag_sigil: String,
+
+    #[arg(
+        short,
+        long,
+        help = "Set the sigil used for tag references",
+        default_value = "ref"
+    )]
     ref_sigil: String,
+
+    #[arg(
+        short,
+        long,
+        help = "Set the sigil used for file references",
+        default_value = "file"
+    )]
     file_sigil: String,
+
+    #[arg(
+        short,
+        long,
+        help = "Set the sigil used for directory references",
+        default_value = "dir"
+    )]
     dir_sigil: String,
-    subcommand: Subcommand,
+
+    #[command(subcommand)]
+    command: Option<Subcommand>,
 }
 
-// Parse the command-line arguments.
-#[allow(clippy::too_many_lines)]
-fn settings() -> Settings {
-    // Set up the command-line interface.
-    let matches = App::new("Tagref")
-        .version(VERSION)
-        .version_short("v")
-        .author("Stephan Boyer <stephan@stephanboyer.com>")
-        .about(
-            "\
-             Tagref helps you maintain cross-references in your code.\n\
-             \n\
-             You can annotate your code with tags like [tag?:foo] and reference them like \
-             [ref?:foo]. You can also reference files like [file:src/main.rs] and directories like \
-             [dir:src].\n\
-             \n\
-             Tagref checks that tags are unique and that references are not dangling.\n\
-             \n\
-             For more information, visit https://github.com/stepchowfun/tagref.\
-             "
-            .replace('?', "")
-            .trim(),
-        )
-        .setting(AppSettings::ColoredHelp)
-        .setting(AppSettings::NextLineHelp)
-        .setting(AppSettings::UnifiedHelpMessage)
-        .setting(AppSettings::VersionlessSubcommands)
-        .arg(
-            Arg::with_name(PATH_OPTION)
-                .value_name("PATH")
-                .short("p")
-                .long(PATH_OPTION)
-                .help("Adds the path of a directory to scan")
-                .default_value(".") // [tag:path_default]
-                .multiple(true)
-                .number_of_values(1),
-        )
-        .arg(
-            Arg::with_name(TAG_SIGIL_OPTION)
-                .value_name("TAG_SIGIL")
-                .short("t")
-                .long(TAG_SIGIL_OPTION)
-                .help("Sets the sigil used for tags")
-                .default_value("tag"), // [tag:tag_sigil_default]
-        )
-        .arg(
-            Arg::with_name(REF_SIGIL_OPTION)
-                .value_name("REF_SIGIL")
-                .short("r")
-                .long(REF_SIGIL_OPTION)
-                .help("Sets the sigil used for tag references")
-                .default_value("ref"), // [tag:ref_sigil_default]
-        )
-        .arg(
-            Arg::with_name(FILE_SIGIL_OPTION)
-                .value_name("FILE_SIGIL")
-                .short("f")
-                .long(FILE_SIGIL_OPTION)
-                .help("Sets the sigil used for file references")
-                .default_value("file"), // [tag:file_sigil_default]
-        )
-        .arg(
-            Arg::with_name(DIR_SIGIL_OPTION)
-                .value_name("DIR_SIGIL")
-                .short("d")
-                .long(DIR_SIGIL_OPTION)
-                .help("Sets the sigil used for directory references")
-                .default_value("dir"), // [tag:dir_sigil_default]
-        )
-        .subcommand(
-            SubCommand::with_name(CHECK_SUBCOMMAND)
-                .about("Checks all the tags and references (default)"),
-        )
-        .subcommand(SubCommand::with_name(LIST_TAGS_SUBCOMMAND).about("Lists all the tags"))
-        .subcommand(
-            SubCommand::with_name(LIST_REFS_SUBCOMMAND).about("Lists all the tag references"),
-        )
-        .subcommand(
-            SubCommand::with_name(LIST_FILES_SUBCOMMAND).about("Lists all the file references"),
-        )
-        .subcommand(
-            SubCommand::with_name(LIST_DIRS_SUBCOMMAND).about("Lists all the directory references"),
-        )
-        .subcommand(
-            SubCommand::with_name(LIST_UNUSED_SUBCOMMAND)
-                .about("Lists the unreferenced tags")
-                .arg(
-                    Arg::with_name(LIST_UNUSED_ERROR_OPTION)
-                        .long(LIST_UNUSED_ERROR_OPTION)
-                        .help("Exits with an error status code if any tags are unreferenced"),
-                ),
-        )
-        .get_matches();
+#[derive(Args)]
+struct ListUnusedArgs {
+    #[arg(
+        long,
+        help = "Exit with an error status code if any tags are unreferenced"
+    )]
+    fail_if_any: bool,
+}
 
-    // Determine which paths to scan. The `unwrap` is safe due to [ref:path_default].
-    let paths = matches
-        .values_of(PATH_OPTION)
-        .unwrap()
-        .map(|path| Path::new(path).to_owned())
-        .collect::<Vec<_>>();
+#[derive(ClapSubcommand)]
+enum Subcommand {
+    #[command(about = "Check all the tags and references (default)")]
+    Check,
 
-    // Determine the tag sigil. The `unwrap` is safe due to [ref:tag_sigil_default].
-    let tag_sigil = matches.value_of(TAG_SIGIL_OPTION).unwrap().to_owned();
+    #[command(about = "List all the tags")]
+    ListTags,
 
-    // Determine the ref sigil. The `unwrap` is safe due to [ref:ref_sigil_default].
-    let ref_sigil = matches.value_of(REF_SIGIL_OPTION).unwrap().to_owned();
+    #[command(about = "List all the tag references")]
+    ListRefs,
 
-    // Determine the file sigil. The `unwrap` is safe due to [ref:file_sigil_default].
-    let file_sigil = matches.value_of(FILE_SIGIL_OPTION).unwrap().to_owned();
+    #[command(about = "List all the file references")]
+    ListFiles,
 
-    // Determine the directory sigil. The `unwrap` is safe due to [ref:dir_sigil_default].
-    let dir_sigil = matches.value_of(DIR_SIGIL_OPTION).unwrap().to_owned();
+    #[command(about = "List all the directory references")]
+    ListDirs,
 
-    // Determine the subcommand.
-    let subcommand = match matches.subcommand_name() {
-        Some(CHECK_SUBCOMMAND) | None => Subcommand::Check,
-        Some(LIST_TAGS_SUBCOMMAND) => Subcommand::ListTags,
-        Some(LIST_REFS_SUBCOMMAND) => Subcommand::ListRefs,
-        Some(LIST_FILES_SUBCOMMAND) => Subcommand::ListFiles,
-        Some(LIST_DIRS_SUBCOMMAND) => Subcommand::ListDirs,
-        Some(LIST_UNUSED_SUBCOMMAND) => Subcommand::ListUnused(
-            matches
-                .subcommand
-                .unwrap() // Safe because we're _in_ a subcommand
-                .matches
-                .is_present(LIST_UNUSED_ERROR_OPTION),
-        ),
-        Some(&_) => panic!("Unimplemented subcommand."),
-    };
-
-    // Return the command-line options.
-    Settings {
-        paths,
-        tag_sigil,
-        ref_sigil,
-        file_sigil,
-        dir_sigil,
-        subcommand,
-    }
+    #[command(about = "List the unreferenced tags")]
+    ListUnused(ListUnusedArgs),
 }
 
 // Program entrypoint
@@ -203,14 +119,15 @@ fn settings() -> Settings {
 fn entry() -> Result<(), String> {
     // Determine whether to print colored output.
     colored::control::set_override(io::stdout().is_terminal());
+
     // Parse the command-line options.
-    let settings = settings();
+    let cli = Cli::parse();
 
     // Compile the regular expressions in advance.
-    let tag_regex = compile_directive_regex(&settings.tag_sigil);
-    let ref_regex = compile_directive_regex(&settings.ref_sigil);
-    let file_regex = compile_directive_regex(&settings.file_sigil);
-    let dir_regex = compile_directive_regex(&settings.dir_sigil);
+    let tag_regex = compile_directive_regex(&cli.tag_sigil);
+    let ref_regex = compile_directive_regex(&cli.ref_sigil);
+    let file_regex = compile_directive_regex(&cli.file_sigil);
+    let dir_regex = compile_directive_regex(&cli.dir_sigil);
 
     // Parse all the tags and references.
     let tags = Arc::new(Mutex::new(HashMap::new()));
@@ -225,7 +142,7 @@ fn entry() -> Result<(), String> {
     let ref_regex_clone = ref_regex.clone();
     let file_regex_clone = file_regex.clone();
     let dir_regex_clone = dir_regex.clone();
-    let files_scanned = walk::walk(&settings.paths, move |file_path, file| {
+    let files_scanned = walk::walk(&cli.paths, move |file_path, file| {
         let directives = directive::parse(
             &tag_regex_clone,
             &ref_regex_clone,
@@ -248,7 +165,7 @@ fn entry() -> Result<(), String> {
     });
 
     // Decide what to do based on the subcommand.
-    match settings.subcommand {
+    match cli.command.unwrap_or(Subcommand::Check) {
         Subcommand::Check => {
             // Errors will be accumulated in this vector.
             let mut errors = Vec::<String>::new();
@@ -324,7 +241,7 @@ fn entry() -> Result<(), String> {
             }
         }
 
-        Subcommand::ListUnused(error_flag_set) => {
+        Subcommand::ListUnused(args) => {
             // Remove all the referenced tags. The `unwrap` is safe assuming no poisoning.
             for r#ref in refs.lock().unwrap().iter() {
                 tags.lock()
@@ -341,10 +258,8 @@ fn entry() -> Result<(), String> {
 
             // Error out if the error flag has been passed and there are unused tags.
             // The `unwrap` is safe assuming no poisoning.
-            if error_flag_set && !tags.lock().unwrap().is_empty() {
-                return Err(format!(
-                    "Found unused tags while using --{LIST_UNUSED_ERROR_OPTION}",
-                ));
+            if args.fail_if_any && !tags.lock().unwrap().is_empty() {
+                return Err("Found unused tags while using --fail-if-any".to_owned());
             }
         }
     }
@@ -359,5 +274,16 @@ fn main() {
     if let Err(e) = entry() {
         eprintln!("{}", e.red());
         exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Cli;
+    use clap::CommandFactory;
+
+    #[test]
+    fn verify_cli() {
+        Cli::command().debug_assert();
     }
 }
