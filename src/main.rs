@@ -42,9 +42,8 @@ struct Cli {
         short,
         long = "path",
         value_name = "PATH",
-        help = "Add the path to a directory to scan",
-        default_value = ".",
-        action = ArgAction::Append
+        help = "Add a directory to scan",
+        default_value = "."
     )]
     paths: Vec<PathBuf>,
 

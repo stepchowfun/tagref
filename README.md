@@ -68,7 +68,7 @@ Commands:
 
 Options:
   -v, --version                  Print version
-  -p, --path <PATH>              Add the path to a directory to scan [default: .]
+  -p, --path <PATH>              Add a directory to scan [default: .]
   -t, --tag-sigil <TAG_SIGIL>    Set the sigil used for tags [default: tag]
   -r, --ref-sigil <REF_SIGIL>    Set the sigil used for tag references [default: ref]
   -f, --file-sigil <FILE_SIGIL>  Set the sigil used for file references [default: file]
