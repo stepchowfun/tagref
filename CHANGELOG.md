@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-04-05
+
+### Changed
+- Terminal detection now uses `std::io::IsTerminal` instead of the `atty` crate.
+- Dependencies and command-line parsing internals have been updated.
+
+### Fixed
+- Repeating `--path` no longer consumes the subcommand.
+
 ## [1.10.0] - 2024-03-14
 
 ### Changed
