@@ -1,10 +1,8 @@
-use {
-    regex::{Regex, escape},
-    std::{
-        fmt,
-        io::BufRead,
-        path::{Path, PathBuf},
-    },
+use regex::{Regex, escape};
+use std::{
+    fmt,
+    io::BufRead,
+    path::{Path, PathBuf},
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -135,10 +133,8 @@ pub fn parse<R: BufRead>(
 
 #[cfg(test)]
 mod tests {
-    use {
-        crate::directive::{Type, compile_directive_regex, parse},
-        std::path::Path,
-    };
+    use crate::directive::{Type, compile_directive_regex, parse};
+    use std::path::Path;
 
     #[test]
     fn parse_empty() {

@@ -1,7 +1,5 @@
-use {
-    crate::directive::Directive,
-    std::{collections::HashMap, fmt::Write},
-};
+use crate::directive::Directive;
+use std::{collections::HashMap, fmt::Write};
 
 // This function checks that all the vectors in `tags_map` have at most one element. It returns a
 // vector of error strings.
@@ -24,13 +22,11 @@ pub fn check(tags_map: &HashMap<String, Vec<Directive>>) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use {
-        crate::{
-            directive::{Directive, Type},
-            duplicates::check,
-        },
-        std::{collections::HashMap, path::Path},
+    use crate::{
+        directive::{Directive, Type},
+        duplicates::check,
     };
+    use std::{collections::HashMap, path::Path};
 
     #[test]
     fn check_empty() {

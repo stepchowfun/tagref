@@ -1,4 +1,5 @@
-use {crate::directive::Directive, std::fs::metadata};
+use crate::directive::Directive;
+use std::fs::metadata;
 
 // This function checks that directory references actually point to directories. It returns a vector
 // of error strings.
