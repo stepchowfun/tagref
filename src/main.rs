@@ -6,17 +6,15 @@ mod file_references;
 mod tag_references;
 mod walk;
 
-use {
-    clap::{ArgAction, Args, Parser, Subcommand as ClapSubcommand},
-    colored::Colorize,
-    directive::compile_directive_regex,
-    std::{
-        collections::{HashMap, HashSet},
-        io::{self, BufReader, IsTerminal},
-        path::PathBuf,
-        process::exit,
-        sync::{Arc, Mutex},
-    },
+use clap::{ArgAction, Args, Parser, Subcommand as ClapSubcommand};
+use colored::Colorize;
+use directive::compile_directive_regex;
+use std::{
+    collections::{HashMap, HashSet},
+    io::{self, BufReader, IsTerminal},
+    path::PathBuf,
+    process::exit,
+    sync::{Arc, Mutex},
 };
 
 // This struct represents the command-line arguments.

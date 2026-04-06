@@ -1,4 +1,5 @@
-use {crate::directive::Directive, std::collections::HashSet};
+use crate::directive::Directive;
+use std::collections::HashSet;
 
 // This function checks that tag references actually point to tags. It returns a vector of error
 // strings.
@@ -16,13 +17,11 @@ pub fn check(tags: &HashSet<String>, refs: &[Directive]) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use {
-        crate::{
-            directive::{Directive, Type},
-            tag_references::check,
-        },
-        std::{collections::HashSet, path::Path},
+    use crate::{
+        directive::{Directive, Type},
+        tag_references::check,
     };
+    use std::{collections::HashSet, path::Path};
 
     #[test]
     fn check_empty() {
