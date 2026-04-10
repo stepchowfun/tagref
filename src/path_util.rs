@@ -32,7 +32,7 @@ pub fn resolve_target_path(source: &Path, target: &Path) -> PathBuf {
 fn is_explicit_relative(path: &Path) -> bool {
     matches!(
         path.components().next(),
-        Some(Component::CurDir | Component::ParentDir)
+        Some(Component::CurDir | Component::ParentDir),
     )
 }
 
@@ -64,23 +64,21 @@ mod tests {
     #[test]
     fn test_resolve_target_path() {
         let result = resolve_target_path(
-            &Path::new("./docs/guidelines.md"),
-            &Path::new("../src/main.rs"),
+            Path::new("./docs/guidelines.md"),
+            Path::new("../src/main.rs"),
         );
         assert_eq!(PathBuf::from("src/main.rs"), result);
 
-        let result =
-            resolve_target_path(&Path::new("./docs/guidelines.md"), &Path::new("./arch.md"));
+        let result = resolve_target_path(Path::new("./docs/guidelines.md"), Path::new("./arch.md"));
         assert_eq!(PathBuf::from("docs/arch.md"), result);
 
         let result = resolve_target_path(
-            &Path::new("./docs/guidelines.md"),
-            &Path::new("../changelogs"),
+            Path::new("./docs/guidelines.md"),
+            Path::new("../changelogs"),
         );
         assert_eq!(PathBuf::from("changelogs"), result);
 
-        let result =
-            resolve_target_path(&Path::new("./docs/guidelines.md"), &Path::new("README.md"));
+        let result = resolve_target_path(Path::new("./docs/guidelines.md"), Path::new("README.md"));
         assert_eq!(PathBuf::from("README.md"), result);
     }
 }
