@@ -3,6 +3,7 @@ mod dir_references;
 mod directive;
 mod duplicates;
 mod file_references;
+mod path_util;
 mod tag_references;
 mod walk;
 
