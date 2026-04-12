@@ -42,7 +42,7 @@ A directory reference guarantees that the given directory exists. For example:
 # This script will format the files in [dir:src].
 ```
 
-File and directory paths are relative to the working directory, which is typically the root of the project or repository. However, relative paths are also supported, for which the paths need to be prefixed with special directory expressions such as `./`, `../` etc. Note that `file:doc.md` will be considered relative to the current working directory. If it's intended to be relative to the referring file, it needs to be written as `file:./doc.md`.
+By default, file and directory paths are relative to the working directory, which is typically the root of the project or repository. However, paths that start with a `.` or `..` component (e.g., `[file:./CHANGELOG.md]`) are considered relative to the directory containing the file where the reference originates.
 
 ## Tag names
 

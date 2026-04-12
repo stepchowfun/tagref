@@ -7,8 +7,11 @@ pub fn check(refs: &[Directive]) -> Vec<String> {
     let mut errors = Vec::<String>::new();
 
     for dir in refs {
-        let dir_path = resolve_target_path(&dir.path, Path::new(&dir.label));
-        match metadata(&dir_path) {
+        // The `unwrap` is safe because `file.path` should always exist in some parent directory.
+        match metadata(resolve_target_path(
+            dir.path.parent().unwrap(),
+            Path::new(&dir.label),
+        )) {
             Ok(metadata) => {
                 if !metadata.is_dir() {
                     errors.push(format!("{dir} does not point to a directory."));
