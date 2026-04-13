@@ -24,6 +24,7 @@ pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
         WalkBuilder::new(path)
             .hidden(false)
             .require_git(false)
+            .parents(false)
             .overrides(
                 OverrideBuilder::new("")
                     .add("!.git/")
