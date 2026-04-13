@@ -33,7 +33,7 @@ tasks:
       # Install the following packages:
       #
       # - build-essential       - Used to link some crates
-      # - curl                  - Used for installing Rust
+      # - curl                  - Used for installing Tagref and Rust
       # - gcc-aarch64-linux-gnu - Used for linking the binary for AArch64
       # - gcc-x86-64-linux-gnu  - Used for linking the binary for x86-64
       # - git                   - Used for testing the pre-commit configuration
@@ -50,6 +50,15 @@ tasks:
         pre-commit \
         ripgrep \
         shellcheck
+
+  install_tagref:
+    description: Install Tagref, a reference checking tool.
+    dependencies:
+      - install_packages
+    user: root
+    command: |
+      # Install Tagref using the official installer script.
+      curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs | sh
 
   create_user:
     description: Create a user who doesn't have root privileges.
@@ -77,10 +86,16 @@ tasks:
       # Install nightly Rust [ref:rust_fmt_nightly_2026-04-06].
       rustup toolchain install nightly-2026-04-06 --profile minimal --component rustfmt
 
+  install_tools:
+    description: Install the tools needed to build and validate the program.
+    dependencies:
+      - install_rust
+      - install_tagref
+
   fetch_crates:
     description: Download and build Rust packages used by the program.
     dependencies:
-      - install_rust
+      - install_tools
     input_paths:
       - Cargo.lock
       - Cargo.toml
@@ -169,7 +184,9 @@ tasks:
       - artifacts
       - target
     command: |
-      # [tag:tagref_check] Check references with Tagref.
+      # [tag:tagref_check] Check references with Tagref (both the published and local version).
+      tagref
+      tagref list-unused --fail-if-any
       cargo-offline run
       cargo-offline run -- list-unused --fail-if-any
 
