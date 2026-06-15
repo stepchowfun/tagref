@@ -13,6 +13,7 @@ use std::{
 // skips over symlinks. The number of files traversed is returned.
 pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
     paths: &[PathBuf],
+    current_dir: &Path,
     callback: T,
 ) -> usize {
     // Keep track of the number of files traversed, and allow multiple threads to update it.
@@ -22,11 +23,12 @@ pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
     for path in paths {
         // Traverse the filesystem in parallel.
         WalkBuilder::new(path)
+            .current_dir(current_dir)
             .hidden(false)
             .require_git(false)
             .parents(false)
             .overrides(
-                OverrideBuilder::new("")
+                OverrideBuilder::new(current_dir)
                     .add("!.git/")
                     .unwrap() // Safe by manual inspection
                     .add("!.hg/")

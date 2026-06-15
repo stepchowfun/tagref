@@ -115,6 +115,7 @@ fn entry() -> Result<(), String> {
     let project_root_clone = project_root.clone();
     let files_scanned = walk::walk(
         std::slice::from_ref(&project_root),
+        &project_root,
         move |file_path, file| {
             let display_path = path_util::make_relative_path(&project_root_clone, file_path);
             let directives = directive::parse(
