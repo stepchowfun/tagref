@@ -4,22 +4,22 @@ use std::{
     path::{Path, PathBuf},
 };
 
-// The name of the config file Tagref searches for.
+// The name of the config file Tagref searches for
 const CONFIG_FILE_NAME: &str = "tagref.yml";
 
-// The default sigil for tag declarations.
+// The default sigil for tag declarations
 const DEFAULT_TAG_SIGIL: &str = "tag";
 
-// The default sigil for tag references.
+// The default sigil for tag references
 const DEFAULT_REF_SIGIL: &str = "ref";
 
-// The default sigil for file references.
+// The default sigil for file references
 const DEFAULT_FILE_SIGIL: &str = "file";
 
-// The default sigil for directory references.
+// The default sigil for directory references
 const DEFAULT_DIR_SIGIL: &str = "dir";
 
-// The resolved configuration used by Tagref at runtime.
+// The resolved configuration used by Tagref at runtime
 #[derive(Debug)]
 pub struct Config {
     pub project_root: PathBuf,
@@ -29,7 +29,7 @@ pub struct Config {
     pub dir_sigil: String,
 }
 
-// The on-disk `tagref.yml` schema.
+// The on-disk `tagref.yml` schema
 #[allow(clippy::struct_field_names)]
 #[derive(Default, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -40,7 +40,7 @@ struct RawConfig {
     dir_sigil: Option<String>,
 }
 
-// Loads the configuration, either from an explicit config path or by searching for one.
+// Loads the configuration, either from an explicit config path or by searching for one
 pub fn load(config_path: Option<&Path>) -> Result<Config, String> {
     let invocation_dir =
         env::current_dir().map_err(|error| format!("Error getting current directory: {error}"))?;
@@ -69,7 +69,7 @@ pub fn load(config_path: Option<&Path>) -> Result<Config, String> {
     }
 }
 
-// Finds the nearest config file at or above `start`.
+// Finds the nearest config file at or above `start`
 fn find_config(start: &Path) -> Option<PathBuf> {
     start
         .ancestors()
@@ -77,7 +77,7 @@ fn find_config(start: &Path) -> Option<PathBuf> {
         .find(|path| path.is_file())
 }
 
-// Parses a config file and applies defaults.
+// Parses a config file and applies defaults
 fn load_from_file(path: &Path) -> Result<Config, String> {
     let project_root = path
         .parent()
@@ -117,7 +117,7 @@ fn load_from_file(path: &Path) -> Result<Config, String> {
     })
 }
 
-// Resolves a command-line path relative to the invocation directory.
+// Resolves a command-line path relative to the invocation directory
 fn make_absolute(invocation_dir: &Path, path: &Path) -> PathBuf {
     if path.is_absolute() {
         path.to_owned()

@@ -13,7 +13,7 @@ pub fn resolve_target_path(project_root: &Path, source_dir: &Path, target_path: 
     }
 }
 
-// Returns `path` relative to `root`, if possible.
+// Returns `path` relative to `root`, if possible
 pub fn make_relative_path(root: &Path, path: &Path) -> PathBuf {
     path.strip_prefix(root)
         .map_or_else(|_| path.to_owned(), Path::to_owned)
