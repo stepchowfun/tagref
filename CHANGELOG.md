@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added support for configuring Tagref with a `tagref.yml` file.
 - Added the `--config` option for specifying the location of the config file.
+- Added support for configuring extra ignore rules in `tagref.yml`.
 
 ### Removed
 - Removed the command-line options for scan paths and sigils. Sigils are now configured in

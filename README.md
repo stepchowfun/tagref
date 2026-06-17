@@ -85,9 +85,15 @@ tag_sigil: tag
 ref_sigil: ref
 file_sigil: file
 dir_sigil: dir
+ignore_rules:
+  - target/
+  - generated/
+  - "*.snap"
 ```
 
 The sigils determine which directives Tagref recognizes. For example, if `tag_sigil` is set to `note`, then `[note:foo]` declares a tag.
+
+The `ignore_rules` field adds extra ignore rules, interpreted relative to the project root. These rules use the same pattern syntax as `.gitignore` files, but they only support exclusions. Rules beginning with `!` are rejected.
 
 ## Installation instructions
 

@@ -27,6 +27,7 @@ pub struct Config {
     pub ref_sigil: String,
     pub file_sigil: String,
     pub dir_sigil: String,
+    pub ignore_rules: Vec<String>,
 }
 
 // The on-disk `tagref.yml` schema
@@ -38,6 +39,7 @@ struct RawConfig {
     ref_sigil: Option<String>,
     file_sigil: Option<String>,
     dir_sigil: Option<String>,
+    ignore_rules: Option<Vec<String>>,
 }
 
 // Loads the configuration, either from an explicit config path or by searching for one
@@ -65,6 +67,7 @@ pub fn load(config_path: Option<&Path>) -> Result<Config, String> {
             ref_sigil: DEFAULT_REF_SIGIL.to_owned(),
             file_sigil: DEFAULT_FILE_SIGIL.to_owned(),
             dir_sigil: DEFAULT_DIR_SIGIL.to_owned(),
+            ignore_rules: Vec::new(),
         })
     }
 }
@@ -99,6 +102,15 @@ fn load_from_file(path: &Path) -> Result<Config, String> {
             )
         })?
     };
+    let ignore_rules = raw_config.ignore_rules.unwrap_or_default();
+    for ignore_rule in &ignore_rules {
+        if ignore_rule.starts_with('!') {
+            return Err(format!(
+                "Invalid ignore rule `{ignore_rule}` in {}: ignore_rules only supports exclusions.",
+                path.to_string_lossy(),
+            ));
+        }
+    }
 
     Ok(Config {
         project_root,
@@ -114,6 +126,7 @@ fn load_from_file(path: &Path) -> Result<Config, String> {
         dir_sigil: raw_config
             .dir_sigil
             .unwrap_or_else(|| DEFAULT_DIR_SIGIL.to_owned()),
+        ignore_rules,
     })
 }
 

@@ -112,10 +112,12 @@ fn entry() -> Result<(), String> {
     let file_regex_clone = file_regex.clone();
     let dir_regex_clone = dir_regex.clone();
     let project_root = config.project_root;
+    let ignore_rules = config.ignore_rules;
     let project_root_clone = project_root.clone();
     let files_scanned = walk::walk(
         std::slice::from_ref(&project_root),
         &project_root,
+        &ignore_rules,
         move |file_path, file| {
             let display_path = path_util::make_relative_path(&project_root_clone, file_path);
             let directives = directive::parse(
@@ -138,7 +140,7 @@ fn entry() -> Result<(), String> {
             files_clone.lock().unwrap().extend(directives.files); // Safe assuming no poisoning
             dirs_clone.lock().unwrap().extend(directives.dirs); // Safe assuming no poisoning
         },
-    );
+    )?;
 
     // Decide what to do based on the subcommand.
     match cli.command.unwrap_or(Subcommand::Check) {
