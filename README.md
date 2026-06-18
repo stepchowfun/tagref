@@ -42,7 +42,7 @@ A directory reference guarantees that the given directory exists. For example:
 # This script will format the files in [dir:src].
 ```
 
-By default, file and directory paths are relative to the working directory, which is typically the root of the project or repository. However, paths that start with a `.` or `..` component (e.g., `[file:./CHANGELOG.md]`) are considered relative to the directory containing the file where the reference originates.
+By default, file and directory paths are relative to the project root. However, paths that start with a `.` or `..` component (e.g., `[file:./CHANGELOG.md]`) are considered relative to the directory containing the file where the reference originates.
 
 ## Tag names
 
@@ -52,7 +52,9 @@ You can use any naming convention you like. The Tagref authors prefer to use low
 
 ## Usage
 
-The easiest way to use Tagref is to run the `tagref` command with no arguments. It will recursively scan the working directory and check all the tags and references. Here are the supported command-line options:
+The easiest way to use Tagref is to run the `tagref` command with no arguments. Tagref will look for the nearest `tagref.yml` in the current directory or one of its ancestors, recursively scan that directory, and check all the tags and references. If no `tagref.yml` file is found, Tagref will scan the current directory instead.
+
+Here are the supported command-line options:
 
 ```
 Usage: tagref [OPTIONS] [COMMAND]
@@ -67,14 +69,30 @@ Commands:
   help         Print this message or the help of the given subcommand(s)
 
 Options:
-  -v, --version                  Print version
-  -p, --path <PATH>              Add a directory to scan [default: .]
-  -t, --tag-sigil <TAG_SIGIL>    Set the sigil used for tags [default: tag]
-  -r, --ref-sigil <REF_SIGIL>    Set the sigil used for tag references [default: ref]
-  -f, --file-sigil <FILE_SIGIL>  Set the sigil used for file references [default: file]
-  -d, --dir-sigil <DIR_SIGIL>    Set the sigil used for directory references [default: dir]
-  -h, --help                     Print help
+  -v, --version          Print version
+  -c, --config <CONFIG>  Use a config file instead of searching for tagref.yml
+  -h, --help             Print help
 ```
+
+## Configuration
+
+The directory containing `tagref.yml` is the project root. If you want to use a config file at a specific path, pass `--config` or `-c`; Tagref will not search for another config file in that case.
+
+All fields are optional. An empty `tagref.yml` file is valid.
+
+```yaml
+tag_sigil: tag
+ref_sigil: ref
+file_sigil: file
+dir_sigil: dir
+ignore_rules:
+  - /artifacts/
+  - /target/
+```
+
+The sigils determine which directives Tagref recognizes. For example, if `tag_sigil` is set to `note`, then `[note:foo]` declares a tag.
+
+The `ignore_rules` field adds extra ignore rules, interpreted relative to the project root. These rules use the same pattern syntax as `.gitignore` files, but they only support exclusions. Rules beginning with `!` are rejected.
 
 ## Installation instructions
 

@@ -1,4 +1,7 @@
-use ignore::{WalkBuilder, WalkState, overrides::OverrideBuilder};
+use ignore::{
+    WalkBuilder, WalkState,
+    overrides::{Override, OverrideBuilder},
+};
 use std::{
     fs::File,
     path::{Path, PathBuf},
@@ -13,27 +16,23 @@ use std::{
 // skips over symlinks. The number of files traversed is returned.
 pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
     paths: &[PathBuf],
+    current_dir: &Path,
+    ignore_rules: &[String],
     callback: T,
-) -> usize {
+) -> Result<usize, String> {
     // Keep track of the number of files traversed, and allow multiple threads to update it.
     let files_scanned = Arc::new(AtomicUsize::new(0));
+    let overrides = build_overrides(current_dir, ignore_rules)?;
 
     // Scan each of the given paths.
     for path in paths {
         // Traverse the filesystem in parallel.
         WalkBuilder::new(path)
+            .current_dir(current_dir)
             .hidden(false)
             .require_git(false)
             .parents(false)
-            .overrides(
-                OverrideBuilder::new("")
-                    .add("!.git/")
-                    .unwrap() // Safe by manual inspection
-                    .add("!.hg/")
-                    .unwrap() // Safe by manual inspection
-                    .build()
-                    .unwrap(), // Safe by manual inspection
-            )
+            .overrides(overrides.clone())
             .build_parallel()
             .run(|| {
                 // These clones will be moved into the closure below, and that closure will be sent
@@ -65,5 +64,23 @@ pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
     }
 
     // Return the number of files traversed.
-    files_scanned.load(Ordering::SeqCst)
+    Ok(files_scanned.load(Ordering::SeqCst))
+}
+
+// Builds high-precedence ignore overrides for the walker
+fn build_overrides(current_dir: &Path, ignore_rules: &[String]) -> Result<Override, String> {
+    let mut override_builder = OverrideBuilder::new(current_dir);
+    override_builder
+        .add("!.git/")
+        .unwrap() // Safe by manual inspection
+        .add("!.hg/")
+        .unwrap(); // Safe by manual inspection
+    for ignore_rule in ignore_rules {
+        override_builder
+            .add(&format!("!{ignore_rule}"))
+            .map_err(|error| format!("Error parsing ignore rule `{ignore_rule}`: {error}"))?;
+    }
+    override_builder
+        .build()
+        .map_err(|error| format!("Error building ignore rules: {error}"))
 }

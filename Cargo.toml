@@ -1,6 +1,6 @@
 [package]
 name = "tagref"
-version = "1.12.1"
+version = "1.13.0"
 authors = ["Stephan Boyer <stephan@stephanboyer.com>"]
 edition = "2024"
 description = "Tagref helps you maintain cross-references in your code."
@@ -21,3 +21,5 @@ clap = { version = "4", features = ["derive", "wrap_help"] }
 colored = "3"
 ignore = "0.4"
 regex = "1"
+serde = { version = "1", features = ["derive"] }
+yaml_serde = "0.10"

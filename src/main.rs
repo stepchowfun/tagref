@@ -1,3 +1,4 @@
+mod config;
 mod count;
 mod dir_references;
 mod directive;
@@ -39,44 +40,11 @@ struct Cli {
 
     #[arg(
         short,
-        long = "path",
-        value_name = "PATH",
-        help = "Add a directory to scan",
-        default_value = "."
-    )]
-    paths: Vec<PathBuf>,
-
-    #[arg(
-        short,
         long,
-        help = "Set the sigil used for tags",
-        default_value = "tag"
+        value_name = "CONFIG",
+        help = "Use a config file instead of searching for tagref.yml"
     )]
-    tag_sigil: String,
-
-    #[arg(
-        short,
-        long,
-        help = "Set the sigil used for tag references",
-        default_value = "ref"
-    )]
-    ref_sigil: String,
-
-    #[arg(
-        short,
-        long,
-        help = "Set the sigil used for file references",
-        default_value = "file"
-    )]
-    file_sigil: String,
-
-    #[arg(
-        short,
-        long,
-        help = "Set the sigil used for directory references",
-        default_value = "dir"
-    )]
-    dir_sigil: String,
+    config: Option<PathBuf>,
 
     #[command(subcommand)]
     command: Option<Subcommand>,
@@ -121,11 +89,14 @@ fn entry() -> Result<(), String> {
     // Parse the command-line options.
     let cli = Cli::parse();
 
+    // Load the configuration.
+    let config = config::load(cli.config.as_deref())?;
+
     // Compile the regular expressions in advance.
-    let tag_regex = compile_directive_regex(&cli.tag_sigil);
-    let ref_regex = compile_directive_regex(&cli.ref_sigil);
-    let file_regex = compile_directive_regex(&cli.file_sigil);
-    let dir_regex = compile_directive_regex(&cli.dir_sigil);
+    let tag_regex = compile_directive_regex(&config.tag_sigil);
+    let ref_regex = compile_directive_regex(&config.ref_sigil);
+    let file_regex = compile_directive_regex(&config.file_sigil);
+    let dir_regex = compile_directive_regex(&config.dir_sigil);
 
     // Parse all the tags and references.
     let tags = Arc::new(Mutex::new(HashMap::new()));
@@ -140,27 +111,37 @@ fn entry() -> Result<(), String> {
     let ref_regex_clone = ref_regex.clone();
     let file_regex_clone = file_regex.clone();
     let dir_regex_clone = dir_regex.clone();
-    let files_scanned = walk::walk(&cli.paths, move |file_path, file| {
-        let directives = directive::parse(
-            &tag_regex_clone,
-            &ref_regex_clone,
-            &file_regex_clone,
-            &dir_regex_clone,
-            file_path,
-            BufReader::new(file),
-        );
-        for tag in directives.tags {
-            tags_clone
-                .lock()
-                .unwrap() // Safe assuming no poisoning
-                .entry(tag.label.clone())
-                .or_insert_with(Vec::new)
-                .push(tag.clone());
-        }
-        refs_clone.lock().unwrap().extend(directives.refs); // Safe assuming no poisoning
-        files_clone.lock().unwrap().extend(directives.files); // Safe assuming no poisoning
-        dirs_clone.lock().unwrap().extend(directives.dirs); // Safe assuming no poisoning
-    });
+    let project_root = config.project_root;
+    let ignore_rules = config.ignore_rules;
+    let project_root_clone = project_root.clone();
+    let files_scanned = walk::walk(
+        std::slice::from_ref(&project_root),
+        &project_root,
+        &ignore_rules,
+        move |file_path, file| {
+            // The `unwrap` is safe because the walker is rooted at `project_root_clone`.
+            let relative_file_path = file_path.strip_prefix(&project_root_clone).unwrap();
+            let directives = directive::parse(
+                &tag_regex_clone,
+                &ref_regex_clone,
+                &file_regex_clone,
+                &dir_regex_clone,
+                relative_file_path,
+                BufReader::new(file),
+            );
+            for tag in directives.tags {
+                tags_clone
+                    .lock()
+                    .unwrap() // Safe assuming no poisoning
+                    .entry(tag.label.clone())
+                    .or_insert_with(Vec::new)
+                    .push(tag.clone());
+            }
+            refs_clone.lock().unwrap().extend(directives.refs); // Safe assuming no poisoning
+            files_clone.lock().unwrap().extend(directives.files); // Safe assuming no poisoning
+            dirs_clone.lock().unwrap().extend(directives.dirs); // Safe assuming no poisoning
+        },
+    )?;
 
     // Decide what to do based on the subcommand.
     match cli.command.unwrap_or(Subcommand::Check) {
@@ -183,10 +164,13 @@ fn entry() -> Result<(), String> {
             errors.extend(tag_references::check(&tags, &refs));
 
             // Check the file references. The `unwrap` is safe assuming no poisoning.
-            errors.extend(file_references::check(&files.lock().unwrap()));
+            errors.extend(file_references::check(
+                &project_root,
+                &files.lock().unwrap(),
+            ));
 
             // Check the directory references. The `unwrap` is safe assuming no poisoning.
-            errors.extend(dir_references::check(&dirs.lock().unwrap()));
+            errors.extend(dir_references::check(&project_root, &dirs.lock().unwrap()));
 
             // Check for any errors and report the result.
             if errors.is_empty() {

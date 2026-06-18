@@ -3,12 +3,13 @@ use std::{fs::metadata, path::Path};
 
 // This function checks that directory references actually point to directories. It returns a vector
 // of error strings.
-pub fn check(refs: &[Directive]) -> Vec<String> {
+pub fn check(project_root: &Path, refs: &[Directive]) -> Vec<String> {
     let mut errors = Vec::<String>::new();
 
     for dir in refs {
-        // The `unwrap` is safe because `file.path` should always exist in some parent directory.
+        // The `unwrap` is safe because `dir.path` should always exist in some parent directory.
         match metadata(resolve_target_path(
+            project_root,
             dir.path.parent().unwrap(),
             Path::new(&dir.label),
         )) {
