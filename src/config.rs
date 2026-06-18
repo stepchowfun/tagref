@@ -48,7 +48,11 @@ pub fn load(config_path: Option<&Path>) -> Result<Config, String> {
         env::current_dir().map_err(|error| format!("Error getting current directory: {error}"))?;
 
     if let Some(config_path) = config_path {
-        let config_path = make_absolute(&invocation_dir, config_path);
+        let config_path = if config_path.is_absolute() {
+            config_path.to_owned()
+        } else {
+            invocation_dir.join(config_path)
+        };
         if !config_path.is_file() {
             return Err(format!(
                 "No config file found at {}.",
@@ -128,13 +132,4 @@ fn load_from_file(path: &Path) -> Result<Config, String> {
             .unwrap_or_else(|| DEFAULT_DIR_SIGIL.to_owned()),
         ignore_rules,
     })
-}
-
-// Resolves a command-line path relative to the invocation directory
-fn make_absolute(invocation_dir: &Path, path: &Path) -> PathBuf {
-    if path.is_absolute() {
-        path.to_owned()
-    } else {
-        invocation_dir.join(path)
-    }
 }
