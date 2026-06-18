@@ -119,13 +119,14 @@ fn entry() -> Result<(), String> {
         &project_root,
         &ignore_rules,
         move |file_path, file| {
-            let display_path = path_util::make_relative_path(&project_root_clone, file_path);
+            // The unwrap is safe because the walker is rooted at `project_root_clone`.
+            let display_path = file_path.strip_prefix(&project_root_clone).unwrap();
             let directives = directive::parse(
                 &tag_regex_clone,
                 &ref_regex_clone,
                 &file_regex_clone,
                 &dir_regex_clone,
-                &display_path,
+                display_path,
                 BufReader::new(file),
             );
             for tag in directives.tags {
