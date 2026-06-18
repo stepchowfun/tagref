@@ -119,7 +119,7 @@ fn entry() -> Result<(), String> {
         &project_root,
         &ignore_rules,
         move |file_path, file| {
-            // The unwrap is safe because the walker is rooted at `project_root_clone`.
+            // The `unwrap` is safe because the walker is rooted at `project_root_clone`.
             let display_path = file_path.strip_prefix(&project_root_clone).unwrap();
             let directives = directive::parse(
                 &tag_regex_clone,
