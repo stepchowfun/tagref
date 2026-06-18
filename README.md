@@ -52,7 +52,7 @@ You can use any naming convention you like. The Tagref authors prefer to use low
 
 ## Usage
 
-The easiest way to use Tagref is to add a `tagref.yml` file to the root of your project and then run the `tagref` command with no arguments. Tagref will look for the nearest `tagref.yml` in the current directory or one of its ancestors, recursively scan that project root, and check all the tags and references. If no `tagref.yml` file is found, Tagref will scan the current directory instead.
+The easiest way to use Tagref is to run the `tagref` command with no arguments. Tagref will look for the nearest `tagref.yml` in the current directory or one of its ancestors, recursively scan that directory, and check all the tags and references. If no `tagref.yml` file is found, Tagref will scan the current directory instead.
 
 Here are the supported command-line options:
 
@@ -86,9 +86,8 @@ ref_sigil: ref
 file_sigil: file
 dir_sigil: dir
 ignore_rules:
-  - target/
-  - generated/
-  - "*.snap"
+  - /artifacts/
+  - /target/
 ```
 
 The sigils determine which directives Tagref recognizes. For example, if `tag_sigil` is set to `note`, then `[note:foo]` declares a tag.
