@@ -152,7 +152,7 @@ If you use [pre-commit](https://pre-commit.com/), you can install Tagref by addi
 ```yaml
 repos:
 - repo: https://github.com/stepchowfun/tagref
-  rev: v1.12.1
+  rev: v1.13.0
   hooks:
   - id: tagref
 ```
