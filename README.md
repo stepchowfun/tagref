@@ -76,9 +76,9 @@ Options:
 
 ## Configuration
 
-The directory containing `tagref.yml` is the project root. If you want to use a config file at a specific path, pass `--config` or `-c`; Tagref will not search for another config file in that case.
+Tagref can be configured by creating a `tagref.yml` file. This file also tells Tagref where the project root is, such that you can run `tagref` from anywhere in the project.
 
-All fields are optional. An empty `tagref.yml` file is valid.
+Below is an example demonstrating all the supported fields. All fields are optional, so an empty `tagref.yml` file is valid.
 
 ```yaml
 tag_sigil: tag
@@ -90,9 +90,9 @@ ignore_rules:
   - /target/
 ```
 
-The sigils determine which directives Tagref recognizes. For example, if `tag_sigil` is set to `note`, then `[note:foo]` declares a tag.
+The sigils determine the syntax of tags and references. For example, if `tag_sigil` is set to `note`, then `[note:foo]` declares a tag.
 
-The `ignore_rules` field adds extra ignore rules, interpreted relative to the project root. These rules use the same pattern syntax as `.gitignore` files, but they only support exclusions. Rules beginning with `!` are rejected.
+The `ignore_rules` field adds extra ignore rules, interpreted relative to the project root. These rules use the same pattern syntax as `.gitignore` files. Rules beginning with `!` are rejected.
 
 ## Installation instructions
 
