@@ -75,11 +75,10 @@ pub fn parse<R: BufRead>(
         if let Ok(line) = line_result {
             // Tags
             for captures in tag_regex.captures_iter(&line) {
-                // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
-                // we are justified in unwrapping.
+                let (_, [label]) = captures.extract();
                 tags.push(Directive {
                     r#type: Type::Tag,
-                    label: captures.get(1).unwrap().as_str().to_owned(),
+                    label: label.to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
                 });
@@ -87,11 +86,10 @@ pub fn parse<R: BufRead>(
 
             // Refs
             for captures in ref_regex.captures_iter(&line) {
-                // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
-                // we are justified in unwrapping.
+                let (_, [label]) = captures.extract();
                 refs.push(Directive {
                     r#type: Type::Ref,
-                    label: captures.get(1).unwrap().as_str().to_owned(),
+                    label: label.to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
                 });
@@ -99,11 +97,10 @@ pub fn parse<R: BufRead>(
 
             // Files
             for captures in file_regex.captures_iter(&line) {
-                // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
-                // we are justified in unwrapping.
+                let (_, [label]) = captures.extract();
                 files.push(Directive {
                     r#type: Type::File,
-                    label: captures.get(1).unwrap().as_str().to_owned(),
+                    label: label.to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
                 });
@@ -111,11 +108,10 @@ pub fn parse<R: BufRead>(
 
             // Directories
             for captures in dir_regex.captures_iter(&line) {
-                // If we got a match, then `captures.get(1)` is guaranteed to return a `Some`. Hence
-                // we are justified in unwrapping.
+                let (_, [label]) = captures.extract();
                 dirs.push(Directive {
                     r#type: Type::Dir,
-                    label: captures.get(1).unwrap().as_str().to_owned(),
+                    label: label.to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
                 });
