@@ -114,34 +114,29 @@ fn entry() -> Result<(), String> {
     let project_root = config.project_root;
     let ignore_rules = config.ignore_rules;
     let project_root_clone = project_root.clone();
-    let files_scanned = walk::walk(
-        &project_root,
-        &project_root,
-        &ignore_rules,
-        move |file_path, file| {
-            // The `unwrap` is safe because the walker is rooted at `project_root_clone`.
-            let relative_file_path = file_path.strip_prefix(&project_root_clone).unwrap();
-            let directives = directive::parse(
-                &tag_regex_clone,
-                &ref_regex_clone,
-                &file_regex_clone,
-                &dir_regex_clone,
-                relative_file_path,
-                BufReader::new(file),
-            );
-            for tag in directives.tags {
-                tags_clone
-                    .lock()
-                    .unwrap() // Safe assuming no poisoning
-                    .entry(tag.label.clone())
-                    .or_insert_with(Vec::new)
-                    .push(tag.clone());
-            }
-            refs_clone.lock().unwrap().extend(directives.refs); // Safe assuming no poisoning
-            files_clone.lock().unwrap().extend(directives.files); // Safe assuming no poisoning
-            dirs_clone.lock().unwrap().extend(directives.dirs); // Safe assuming no poisoning
-        },
-    )?;
+    let files_scanned = walk::walk(&project_root, &ignore_rules, move |file_path, file| {
+        // The `unwrap` is safe because the walker is rooted at `project_root_clone`.
+        let relative_file_path = file_path.strip_prefix(&project_root_clone).unwrap();
+        let directives = directive::parse(
+            &tag_regex_clone,
+            &ref_regex_clone,
+            &file_regex_clone,
+            &dir_regex_clone,
+            relative_file_path,
+            BufReader::new(file),
+        );
+        for tag in directives.tags {
+            tags_clone
+                .lock()
+                .unwrap() // Safe assuming no poisoning
+                .entry(tag.label.clone())
+                .or_insert_with(Vec::new)
+                .push(tag.clone());
+        }
+        refs_clone.lock().unwrap().extend(directives.refs); // Safe assuming no poisoning
+        files_clone.lock().unwrap().extend(directives.files); // Safe assuming no poisoning
+        dirs_clone.lock().unwrap().extend(directives.dirs); // Safe assuming no poisoning
+    })?;
 
     // Decide what to do based on the subcommand.
     match cli.command.unwrap_or(Subcommand::Check) {

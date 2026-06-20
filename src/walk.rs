@@ -16,17 +16,16 @@ use std::{
 // skips over symlinks. The number of files traversed is returned.
 pub fn walk<T: 'static + Clone + Send + FnMut(&Path, File)>(
     path: &Path,
-    current_dir: &Path,
     ignore_rules: &[String],
     callback: T,
 ) -> Result<usize, String> {
     // Keep track of the number of files traversed, and allow multiple threads to update it.
     let files_scanned = Arc::new(AtomicUsize::new(0));
-    let overrides = build_overrides(current_dir, ignore_rules)?;
+    let overrides = build_overrides(path, ignore_rules)?;
 
     // Traverse the filesystem in parallel.
     WalkBuilder::new(path)
-        .current_dir(current_dir)
+        .current_dir(path)
         .hidden(false)
         .require_git(false)
         .parents(false)
