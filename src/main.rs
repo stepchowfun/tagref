@@ -115,7 +115,7 @@ fn entry() -> Result<(), String> {
     let ignore_rules = config.ignore_rules;
     let project_root_clone = project_root.clone();
     let files_scanned = walk::walk(
-        std::slice::from_ref(&project_root),
+        &project_root,
         &project_root,
         &ignore_rules,
         move |file_path, file| {
