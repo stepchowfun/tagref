@@ -33,5 +33,5 @@ The GitHub workflow will fail initially because the jobs which test the installe
 Releasing a new version is a three-step process:
 
 1. Bump the version in `[file:Cargo.toml]`, run `cargo build` to update `[file:Cargo.lock]`, and update `[file:CHANGELOG.md]` with information about the new version. Ship those changes as a single commit.
-2. Once the GitHub workflow has finished on the `main` branch, update the version in `[file:install.sh]` to point to the new release. Also, update the `rev` in the example pre-commit configuration in `[file:README.md]` to point to the new version.
+2. Once the GitHub workflow has finished on the `main` branch, the installation script will begin installing the new release by default. Update the `rev` in the example pre-commit configuration in `[file:README.md]` to point to the new version.
 3. Create a pull request in the `Homebrew/homebrew-core` repository on GitHub to bump the version in [this file](https://github.com/Homebrew/homebrew-core/blob/HEAD/Formula/t/tagref.rb).
