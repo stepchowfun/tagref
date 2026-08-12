@@ -17,9 +17,9 @@ clippy.pedantic = { level = "deny", priority = -1 }
 rust.warnings = "deny"
 
 [dependencies]
-clap = { version = "4.6.5", features = ["derive", "wrap_help"] }
+clap = { version = "4.6.6", features = ["derive", "wrap_help"] }
 colored = "3.1.1"
-ignore = "0.4.31"
+ignore = "0.4.33"
 regex = "1.13.1"
 serde = { version = "1.0.229", features = ["derive"] }
-yaml_serde = "0.10.4"
+yaml_serde = "0.10.5"
