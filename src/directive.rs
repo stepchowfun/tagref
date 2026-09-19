@@ -34,7 +34,7 @@ impl fmt::Display for Directive {
                 Type::Dir => "dir",
             },
             self.label,
-            self.path.to_string_lossy(),
+            self.path.display(),
             self.line_number,
         )
     }

@@ -56,7 +56,7 @@ pub fn load(config_path: Option<&Path>) -> Result<Config, String> {
         if !config_path.is_file() {
             return Err(format!(
                 "No config file found at {}.",
-                config_path.to_string_lossy(),
+                config_path.display(),
             ));
         }
         return load_from_file(&config_path);
@@ -88,30 +88,22 @@ fn find_config(start: &Path) -> Option<PathBuf> {
 fn load_from_file(path: &Path) -> Result<Config, String> {
     let project_root = path
         .parent()
-        .ok_or_else(|| format!("Config file {} has no parent.", path.to_string_lossy()))?
+        .ok_or_else(|| format!("Config file {} has no parent.", path.display()))?
         .to_owned();
-    let contents = fs::read_to_string(path).map_err(|error| {
-        format!(
-            "Error reading config file {}: {error}",
-            path.to_string_lossy(),
-        )
-    })?;
+    let contents = fs::read_to_string(path)
+        .map_err(|error| format!("Error reading config file {}: {error}", path.display()))?;
     let raw_config = if contents.trim().is_empty() {
         RawConfig::default()
     } else {
-        yaml_serde::from_str::<RawConfig>(&contents).map_err(|error| {
-            format!(
-                "Error parsing config file {}: {error}",
-                path.to_string_lossy(),
-            )
-        })?
+        yaml_serde::from_str::<RawConfig>(&contents)
+            .map_err(|error| format!("Error parsing config file {}: {error}", path.display()))?
     };
     let ignore_rules = raw_config.ignore_rules.unwrap_or_default();
     for ignore_rule in &ignore_rules {
         if ignore_rule.starts_with('!') {
             return Err(format!(
                 "Invalid ignore rule `{ignore_rule}` in {}: ignore_rules only supports exclusions.",
-                path.to_string_lossy(),
+                path.display(),
             ));
         }
     }
