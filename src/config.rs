@@ -10,6 +10,9 @@ const CONFIG_FILE_NAME: &str = "tagref.yml";
 // The default sigil for tag declarations
 const DEFAULT_TAG_SIGIL: &str = "tag";
 
+// The default sigil for group declarations
+const DEFAULT_GROUP_SIGIL: &str = "group";
+
 // The default sigil for tag references
 const DEFAULT_REF_SIGIL: &str = "ref";
 
@@ -24,6 +27,7 @@ const DEFAULT_DIR_SIGIL: &str = "dir";
 pub struct Config {
     pub project_root: PathBuf,
     pub tag_sigil: String,
+    pub group_sigil: String,
     pub ref_sigil: String,
     pub file_sigil: String,
     pub dir_sigil: String,
@@ -36,6 +40,7 @@ pub struct Config {
 #[serde(deny_unknown_fields)]
 struct RawConfig {
     tag_sigil: Option<String>,
+    group_sigil: Option<String>,
     ref_sigil: Option<String>,
     file_sigil: Option<String>,
     dir_sigil: Option<String>,
@@ -68,6 +73,7 @@ pub fn load(config_path: Option<&Path>) -> Result<Config, String> {
         Ok(Config {
             project_root: invocation_dir,
             tag_sigil: DEFAULT_TAG_SIGIL.to_owned(),
+            group_sigil: DEFAULT_GROUP_SIGIL.to_owned(),
             ref_sigil: DEFAULT_REF_SIGIL.to_owned(),
             file_sigil: DEFAULT_FILE_SIGIL.to_owned(),
             dir_sigil: DEFAULT_DIR_SIGIL.to_owned(),
@@ -113,6 +119,9 @@ fn load_from_file(path: &Path) -> Result<Config, String> {
         tag_sigil: raw_config
             .tag_sigil
             .unwrap_or_else(|| DEFAULT_TAG_SIGIL.to_owned()),
+        group_sigil: raw_config
+            .group_sigil
+            .unwrap_or_else(|| DEFAULT_GROUP_SIGIL.to_owned()),
         ref_sigil: raw_config
             .ref_sigil
             .unwrap_or_else(|| DEFAULT_REF_SIGIL.to_owned()),
@@ -124,4 +133,18 @@ fn load_from_file(path: &Path) -> Result<Config, String> {
             .unwrap_or_else(|| DEFAULT_DIR_SIGIL.to_owned()),
         ignore_rules,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RawConfig;
+
+    #[test]
+    fn deserialize_group_sigil() {
+        // Parse a custom group sigil from the on-disk schema.
+        let raw = yaml_serde::from_str::<RawConfig>("group_sigil: sync").unwrap();
+
+        // Ensure the configured sigil is retained.
+        assert_eq!(raw.group_sigil.as_deref(), Some("sync"));
+    }
 }
