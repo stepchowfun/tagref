@@ -4,8 +4,10 @@ mod dir_references;
 mod directive;
 mod duplicates;
 mod file_references;
+mod groups;
 mod path_util;
-mod tag_references;
+mod references;
+mod target_collisions;
 mod walk;
 
 use clap::{ArgAction, Args, Parser, Subcommand as ClapSubcommand};
@@ -25,9 +27,11 @@ use std::{
     about = concat!(
         env!("CARGO_PKG_DESCRIPTION"),
         "\n\n",
-        "You can annotate your code with tags like [tag:foo] and reference them like [ref:foo]. ",
+        "You can annotate your code with tags like [tag:foo], groups like [group:bar], and ",
+        "reference either with directives like [ref:foo]. ",
         "You can also reference files like [file:src/main.rs] and directories like [dir:src]. ",
-        "Tagref checks that tags are unique and that references are not dangling.\n\n",
+        "Tagref checks that tags are unique, groups have multiple members, and references are not ",
+        "dangling.\n\n",
         "More information can be found at: ",
         env!("CARGO_PKG_HOMEPAGE"),
     ),
@@ -67,7 +71,10 @@ enum Subcommand {
     #[command(about = "List all the tags")]
     ListTags,
 
-    #[command(about = "List all the tag references")]
+    #[command(about = "List all the group members")]
+    ListGroups,
+
+    #[command(about = "List all the references")]
     ListRefs,
 
     #[command(about = "List all the file references")]
@@ -94,20 +101,24 @@ fn entry() -> Result<(), String> {
 
     // Compile the regular expressions in advance.
     let tag_regex = compile_directive_regex(&config.tag_sigil);
+    let group_regex = compile_directive_regex(&config.group_sigil);
     let ref_regex = compile_directive_regex(&config.ref_sigil);
     let file_regex = compile_directive_regex(&config.file_sigil);
     let dir_regex = compile_directive_regex(&config.dir_sigil);
 
     // Parse all the tags and references.
     let tags = Arc::new(Mutex::new(HashMap::new()));
+    let groups = Arc::new(Mutex::new(HashMap::new()));
     let refs = Arc::new(Mutex::new(Vec::new()));
     let files = Arc::new(Mutex::new(Vec::new()));
     let dirs = Arc::new(Mutex::new(Vec::new()));
     let tags_clone = tags.clone();
+    let groups_clone = groups.clone();
     let refs_clone = refs.clone();
     let files_clone = files.clone();
     let dirs_clone = dirs.clone();
     let tag_regex_clone = tag_regex.clone();
+    let group_regex_clone = group_regex.clone();
     let ref_regex_clone = ref_regex.clone();
     let file_regex_clone = file_regex.clone();
     let dir_regex_clone = dir_regex.clone();
@@ -119,6 +130,7 @@ fn entry() -> Result<(), String> {
         let relative_file_path = file_path.strip_prefix(&project_root_clone).unwrap();
         let directives = directive::parse(
             &tag_regex_clone,
+            &group_regex_clone,
             &ref_regex_clone,
             &file_regex_clone,
             &dir_regex_clone,
@@ -132,6 +144,14 @@ fn entry() -> Result<(), String> {
                 .entry(tag.label.clone())
                 .or_insert_with(Vec::new)
                 .push(tag.clone());
+        }
+        for group in directives.groups {
+            groups_clone
+                .lock()
+                .unwrap() // Safe assuming no poisoning
+                .entry(group.label.clone())
+                .or_insert_with(Vec::new)
+                .push(group.clone());
         }
         refs_clone.lock().unwrap().extend(directives.refs); // Safe assuming no poisoning
         files_clone.lock().unwrap().extend(directives.files); // Safe assuming no poisoning
@@ -148,15 +168,24 @@ fn entry() -> Result<(), String> {
             // assuming no poisoning.
             errors.extend(duplicates::check(&tags.lock().unwrap()));
 
-            // Check the tag references. The `unwrap`s are safe assuming no poisoning.
-            let tags = tags
+            // Check that groups have multiple members and do not collide with tags. The `unwrap`s
+            // are safe assuming no poisoning.
+            errors.extend(groups::check(&groups.lock().unwrap()));
+            errors.extend(target_collisions::check(
+                &tags.lock().unwrap(),
+                &groups.lock().unwrap(),
+            ));
+
+            // Check the references. The `unwrap`s are safe assuming no poisoning.
+            let mut targets = tags
                 .lock()
                 .unwrap()
                 .keys()
                 .cloned()
                 .collect::<HashSet<String>>();
+            targets.extend(groups.lock().unwrap().keys().cloned());
             let refs = refs.lock().unwrap();
-            errors.extend(tag_references::check(&tags, &refs));
+            errors.extend(references::check(&targets, &refs));
 
             // Check the file references. The `unwrap` is safe assuming no poisoning.
             errors.extend(file_references::check(
@@ -172,9 +201,13 @@ fn entry() -> Result<(), String> {
                 println!(
                     "{}",
                     format!(
-                        "{}, {}, {}, and {} validated in {}.",
-                        count::count(tags.len(), "tag"),
-                        count::count(refs.len(), "tag reference"),
+                        "{}, {}, {}, {}, and {} validated in {}.",
+                        count::count(tags.lock().unwrap().len(), "tag"),
+                        count::count(
+                            groups.lock().unwrap().values().map(Vec::len).sum(),
+                            "group member",
+                        ),
+                        count::count(refs.len(), "reference"),
                         // The `unwrap` is safe assuming no poisoning.
                         count::count(files.lock().unwrap().len(), "file reference"),
                         // The `unwrap` is safe assuming no poisoning.
@@ -197,8 +230,17 @@ fn entry() -> Result<(), String> {
             }
         }
 
+        Subcommand::ListGroups => {
+            // Print all the group members. The `unwrap` is safe assuming no poisoning.
+            for members in groups.lock().unwrap().values() {
+                for member in members {
+                    println!("{member}");
+                }
+            }
+        }
+
         Subcommand::ListRefs => {
-            // Print all the tag references. The `unwrap` is safe assuming no poisoning.
+            // Print all the references. The `unwrap` is safe assuming no poisoning.
             for r#ref in refs.lock().unwrap().iter() {
                 println!("{ref}");
             }
@@ -260,6 +302,7 @@ mod tests {
     use clap::CommandFactory;
 
     #[test]
+    // Keep this test in sync with the CLI group example. [group:bar]
     fn verify_cli() {
         Cli::command().debug_assert();
     }

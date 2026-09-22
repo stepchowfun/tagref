@@ -8,6 +8,7 @@ use std::{
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Type {
     Tag,
+    Group,
     Ref,
     File,
     Dir,
@@ -29,6 +30,7 @@ impl fmt::Display for Directive {
             "[{}:{}] @ {}:{}",
             match self.r#type {
                 Type::Tag => "tag",
+                Type::Group => "group",
                 Type::Ref => "ref",
                 Type::File => "file",
                 Type::Dir => "dir",
@@ -43,6 +45,7 @@ impl fmt::Display for Directive {
 #[derive(Clone, Debug)]
 pub struct Directives {
     pub tags: Vec<Directive>,
+    pub groups: Vec<Directive>,
     pub refs: Vec<Directive>,
     pub files: Vec<Directive>,
     pub dirs: Vec<Directive>,
@@ -60,6 +63,7 @@ pub fn compile_directive_regex(sigil: &str) -> Regex {
 // This function returns all the directives in a file for a given type.
 pub fn parse<R: BufRead>(
     tag_regex: &Regex,
+    group_regex: &Regex,
     ref_regex: &Regex,
     file_regex: &Regex,
     dir_regex: &Regex,
@@ -67,6 +71,7 @@ pub fn parse<R: BufRead>(
     reader: R,
 ) -> Directives {
     let mut tags: Vec<Directive> = Vec::new();
+    let mut groups: Vec<Directive> = Vec::new();
     let mut refs: Vec<Directive> = Vec::new();
     let mut files: Vec<Directive> = Vec::new();
     let mut dirs: Vec<Directive> = Vec::new();
@@ -78,6 +83,17 @@ pub fn parse<R: BufRead>(
                 let (_, [label]) = captures.extract();
                 tags.push(Directive {
                     r#type: Type::Tag,
+                    label: label.to_owned(),
+                    path: path.to_owned(),
+                    line_number: line_number + 1,
+                });
+            }
+
+            // Groups
+            for captures in group_regex.captures_iter(&line) {
+                let (_, [label]) = captures.extract();
+                groups.push(Directive {
+                    r#type: Type::Group,
                     label: label.to_owned(),
                     path: path.to_owned(),
                     line_number: line_number + 1,
@@ -121,6 +137,7 @@ pub fn parse<R: BufRead>(
 
     Directives {
         tags,
+        groups,
         refs,
         files,
         dirs,
@@ -138,12 +155,14 @@ mod tests {
         let contents = b"" as &[u8];
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -152,6 +171,45 @@ mod tests {
         );
 
         assert!(directives.tags.is_empty());
+        assert!(directives.groups.is_empty());
+        assert!(directives.refs.is_empty());
+        assert!(directives.files.is_empty());
+        assert!(directives.dirs.is_empty());
+    }
+
+    #[test]
+    fn parse_group_basic() {
+        let path = Path::new("file.rs").to_owned();
+        let contents = r"
+      [?group:label]
+    "
+        .trim()
+        .replace('?', "")
+        .as_bytes()
+        .to_owned();
+
+        let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
+        let ref_regex = compile_directive_regex("ref");
+        let file_regex = compile_directive_regex("file");
+        let dir_regex = compile_directive_regex("dir");
+
+        let directives = parse(
+            &tag_regex,
+            &group_regex,
+            &ref_regex,
+            &file_regex,
+            &dir_regex,
+            &path,
+            contents.as_ref(),
+        );
+
+        assert!(directives.tags.is_empty());
+        assert_eq!(directives.groups.len(), 1);
+        assert_eq!(directives.groups[0].r#type, Type::Group);
+        assert_eq!(directives.groups[0].label, "label");
+        assert_eq!(directives.groups[0].path, path);
+        assert_eq!(directives.groups[0].line_number, 1);
         assert!(directives.refs.is_empty());
         assert!(directives.files.is_empty());
         assert!(directives.dirs.is_empty());
@@ -169,12 +227,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -204,12 +264,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -239,12 +301,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -274,12 +338,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -309,12 +375,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -362,12 +430,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -415,12 +485,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
@@ -472,12 +544,14 @@ mod tests {
         .to_owned();
 
         let tag_regex = compile_directive_regex("tag");
+        let group_regex = compile_directive_regex("group");
         let ref_regex = compile_directive_regex("ref");
         let file_regex = compile_directive_regex("file");
         let dir_regex = compile_directive_regex("dir");
 
         let directives = parse(
             &tag_regex,
+            &group_regex,
             &ref_regex,
             &file_regex,
             &dir_regex,
