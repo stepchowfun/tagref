@@ -140,11 +140,24 @@ mod tests {
     use super::RawConfig;
 
     #[test]
-    fn deserialize_group_sigil() {
-        // Parse a custom group sigil from the on-disk schema.
-        let raw = yaml_serde::from_str::<RawConfig>("group_sigil: sync").unwrap();
+    fn deserialize_sigils() {
+        // Parse custom sigils from the on-disk schema.
+        let raw = yaml_serde::from_str::<RawConfig>(
+            r"
+tag_sigil: anchor
+group_sigil: sync
+ref_sigil: link
+file_sigil: document
+dir_sigil: directory
+",
+        )
+        .unwrap();
 
-        // Ensure the configured sigil is retained.
+        // Ensure all the configured sigils are retained.
+        assert_eq!(raw.tag_sigil.as_deref(), Some("anchor"));
         assert_eq!(raw.group_sigil.as_deref(), Some("sync"));
+        assert_eq!(raw.ref_sigil.as_deref(), Some("link"));
+        assert_eq!(raw.file_sigil.as_deref(), Some("document"));
+        assert_eq!(raw.dir_sigil.as_deref(), Some("directory"));
     }
 }
