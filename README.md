@@ -39,11 +39,11 @@ class User:
 USER_COLUMNS = []
 ```
 
-Every group must have at least two members, so deleting or mistyping one member of a two-member group produces an error. A regular reference can point to either a tag or a group, such as <code>[ref&#58;user_fields]</code>. Tags and groups share a label namespace and cannot use the same label.
+Every group must have at least two members, so deleting or mistyping one member of a two-member group produces an error. A regular reference can point to either a tag or a group, such as `[ref:user_fields]`. Tags and groups share a label namespace and cannot use the same label.
 
 In the polynomial example, Tagref doesn't guarantee that `polynomial` returns a nonzero number. It isn't magic! It only ensures that the `polynomial_nonzero` tag exists unambiguously. The programmer is still responsible for keeping the comments in sync with the code.
 
-In addition to references to tags, Tagref also supports *file references* and *directory references*. A file reference guarantees that the given file exists. For example:
+In addition to references to tags and groups, Tagref also supports *file references* and *directory references*. A file reference guarantees that the given file exists. For example:
 
 ```python
 # If you bump the version, be sure to update [file:CHANGELOG.md].
@@ -167,7 +167,7 @@ If you use [pre-commit](https://pre-commit.com/), you can install Tagref by addi
 ```yaml
 repos:
 - repo: https://github.com/stepchowfun/tagref
-  rev: v1.13.0
+  rev: v1.14.0
   hooks:
   - id: tagref
 ```
