@@ -57,7 +57,6 @@ tasks:
       - install_packages
     user: root
     command: |
-      # Bust the Toast cache now that the installer provides Tagref 1.14.0.
       # Install Tagref using the official installer script.
       curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs | sh
 
