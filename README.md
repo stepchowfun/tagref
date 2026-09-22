@@ -39,7 +39,7 @@ class User:
 USER_COLUMNS = []
 ```
 
-Every group must have at least two members, so deleting or mistyping one member of a two-member group produces an error. A regular reference can point to either a tag or a group, such as `[ref:user_fields]`. Tags and groups share a label namespace and cannot use the same label.
+Every group must have at least two members, so deleting or mistyping one member of a two-member group produces an error. A regular reference can point to either a tag or a group, such as <code>[ref&#58;user_fields]</code>. Tags and groups share a label namespace and cannot use the same label.
 
 In the polynomial example, Tagref doesn't guarantee that `polynomial` returns a nonzero number. It isn't magic! It only ensures that the `polynomial_nonzero` tag exists unambiguously. The programmer is still responsible for keeping the comments in sync with the code.
 
