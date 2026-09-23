@@ -10,6 +10,8 @@ Tagref works with any programming language, and it respects your `.gitignore` fi
 
 ## What is it?
 
+### Tags and references
+
 Tagref allows you to annotate your code with *tags* (in comments) which can be *referenced* from other parts of the codebase.
 
 Here's an example in Python:
@@ -23,25 +25,29 @@ def inverse_polynomial(x):
     return 1 / polynomial(x) # This is safe due to [ref:polynomial_nonzero].
 ```
 
-To help you manage these tags and references, Tagref checks the following:
+To help you manage tags and references, Tagref checks the following:
 
-1. References actually point to tags or groups. A target cannot be deleted or renamed without updating the references that point to it.
+1. References actually point to tags. A target cannot be deleted or renamed without updating the references that point to it.
 2. Tags are unique. There is never any ambiguity about which tag is being referenced.
 
-When several places are equally responsible for staying in sync, you can use a *group* instead of choosing one place to hold a tag:
+In the example above, Tagref doesn't guarantee that `polynomial` returns a nonzero number. It isn't magic! It only ensures that the `polynomial_nonzero` tag exists unambiguously. The programmer is still responsible for keeping the comments in sync with the code.
+
+### Groups
+
+When several places need to be kept in sync, you can use a *group*:
 
 ```python
-# Keep this representation synchronized with the database schema. [group:user_fields]
+# Keep this in sync with [group:user_fields].
 class User:
     pass
 
-# Keep this schema synchronized with the application representation. [group:user_fields]
+# Keep this in sync with [group:user_fields].
 USER_COLUMNS = []
 ```
 
-Every group must have at least two members, so deleting or mistyping one member of a two-member group produces an error. A regular reference can point to either a tag or a group, such as `[ref:user_fields]`. Tags and groups share a label namespace and cannot use the same label.
+Every group must have at least two members, so mistyping the name of one member of a group produces an error. A reference can point to either a tag or a group, such as `[ref:user_fields]`. Tags and groups share a label namespace and cannot use the same label.
 
-In the polynomial example, Tagref doesn't guarantee that `polynomial` returns a nonzero number. It isn't magic! It only ensures that the `polynomial_nonzero` tag exists unambiguously. The programmer is still responsible for keeping the comments in sync with the code.
+### File and directory references
 
 In addition to references to tags and groups, Tagref also supports *file references* and *directory references*. A file reference guarantees that the given file exists. For example:
 
@@ -57,7 +63,7 @@ A directory reference guarantees that the given directory exists. For example:
 
 By default, file and directory paths are relative to the project root. However, paths that start with a `.` or `..` component (e.g., `[file:./CHANGELOG.md]`) are considered relative to the directory containing the file where the reference originates.
 
-## Labels
+## Tag and group names
 
 The label of a tag or group may consist of any UTF-8 text except the right square bracket `]`. Internal whitespace (as in `[tag:foo bar]`) is allowed, and surrounding whitespace (as in `[tag: baz ]`) is ignored. Labels are case-sensitive, so `[tag:qux]` and `[tag:Qux]` are different tags.
 
