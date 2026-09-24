@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] - 2026-09-23
+
+### Changed
+- File and directory references are now relative to the directory containing the file where the reference originates. Paths that start with `/` are relative to the project root.
+
 ## [1.14.0] - 2026-09-22
 
 ### Added

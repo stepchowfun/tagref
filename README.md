@@ -61,7 +61,7 @@ A directory reference guarantees that the given directory exists. For example:
 # This script will format the files in [dir:src].
 ```
 
-By default, file and directory paths are relative to the project root. However, paths that start with a `.` or `..` component (e.g., `[file:./CHANGELOG.md]`) are considered relative to the directory containing the file where the reference originates.
+By default, file and directory paths are relative to the directory containing the file where the reference originates. Paths that start with `/` (e.g., `[file:/CHANGELOG.md]`) are relative to the project root instead.
 
 ## Tag and group names
 

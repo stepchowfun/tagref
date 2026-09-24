@@ -1,6 +1,6 @@
 [package]
 name = "tagref"
-version = "1.14.0"
+version = "1.15.0"
 authors = ["Stephan Boyer <stephan@stephanboyer.com>"]
 edition = "2024"
 description = "Manage cross-references in your code."
