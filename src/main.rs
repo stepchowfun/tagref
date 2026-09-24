@@ -29,7 +29,7 @@ use std::{
         "\n\n",
         "You can annotate your code with tags like [tag:foo], groups like [group:bar], and ",
         "reference either with directives like [ref:foo]. ",
-        "You can also reference files like [file:main.rs] and directories like [dir:/src]. Paths ",
+        "You can also reference files like [file:./main.rs] and directories like [dir:.]. Paths ",
         "are relative to the file containing the reference, or to the project root if they start ",
         "with /. ",
         "Tagref checks that tags are unique, groups have multiple members, and references are not ",

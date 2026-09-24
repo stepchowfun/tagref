@@ -18,14 +18,11 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     // Thanks to [ref:tagref_check], the following file and directory references will be checked
-    // as a form of integration test:
+    // as a form of integration test. They are limited to forms that resolve the same way in the
+    // published version of Tagref, which also checks this file.
     //
-    // - [file:/toast.yml]   // Relative to the project root
     // - [file:../toast.yml] // Relative to the directory containing this file
-    // - [file:main.rs]      // Relative to the directory containing this file
     // - [file:./main.rs]    // Relative to the directory containing this file
-    // - [dir:/src]          // Relative to the project root
-    // - [dir:/]             // The project root
     // - [dir:../src]        // Relative to the directory containing this file
     // - [dir:.]             // The directory containing this file
 
