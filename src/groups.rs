@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn check_empty() {
         // Ensure an empty collection has no invalid groups.
-        assert!(check(&HashMap::new()).is_empty());
+        assert_eq!(check(&HashMap::new()), Vec::<String>::new());
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod tests {
         )]);
 
         // Ensure the multi-member group is valid.
-        assert!(check(&groups).is_empty());
+        assert_eq!(check(&groups), Vec::<String>::new());
     }
 
     #[test]

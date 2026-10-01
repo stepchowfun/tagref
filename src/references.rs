@@ -36,7 +36,7 @@ mod tests {
     #[test]
     fn check_empty() {
         // Ensure an empty collection has no dangling references.
-        assert!(check(&HashSet::new(), &[]).is_empty());
+        assert_eq!(check(&HashSet::new(), &[]), Vec::<String>::new());
     }
 
     #[test]
@@ -46,7 +46,7 @@ mod tests {
         let refs = vec![reference("tag", 1), reference("group", 2)];
 
         // Ensure both references resolve.
-        assert!(check(&targets, &refs).is_empty());
+        assert_eq!(check(&targets, &refs), Vec::<String>::new());
     }
 
     #[test]

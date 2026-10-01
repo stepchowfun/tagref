@@ -49,7 +49,7 @@ mod tests {
             HashMap::from([("group".to_owned(), vec![directive(Type::Group, "group", 2)])]);
 
         // Ensure disjoint target labels are valid.
-        assert!(check(&tags, &groups).is_empty());
+        assert_eq!(check(&tags, &groups), Vec::<String>::new());
     }
 
     #[test]

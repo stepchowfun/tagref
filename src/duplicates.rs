@@ -30,7 +30,7 @@ mod tests {
 
     #[test]
     fn check_empty() {
-        assert!(check(&HashMap::new()).is_empty());
+        assert_eq!(check(&HashMap::new()), Vec::<String>::new());
     }
 
     #[test]
@@ -54,7 +54,7 @@ mod tests {
         tags_map.insert("tag1".to_owned(), tags_vec1);
         tags_map.insert("tag2".to_owned(), tags_vec2);
 
-        assert!(check(&tags_map).is_empty());
+        assert_eq!(check(&tags_map), Vec::<String>::new());
     }
 
     #[test]
