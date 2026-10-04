@@ -36,6 +36,7 @@ use std::{
         env!("CARGO_PKG_HOMEPAGE"),
     ),
     version,
+    display_name = "Tagref",
     disable_version_flag = true
 )]
 struct Cli {
