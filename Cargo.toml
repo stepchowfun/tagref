@@ -19,7 +19,7 @@ rust.warnings = "deny"
 [dependencies]
 clap = { version = "4.6.7", features = ["derive", "wrap_help"] }
 colored = "3.1.1"
-ignore = "0.4.33"
+ignore = "0.4.34"
 regex = "1.13.1"
 serde = { version = "1.0.229", features = ["derive"] }
 yaml_serde = "0.10.7"
