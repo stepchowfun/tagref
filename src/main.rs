@@ -33,7 +33,7 @@ use std::{
         "Tagref checks that tags are unique, groups have multiple members, and references are not ",
         "dangling.\n\n",
         "More information can be found at: ",
-        env!("CARGO_PKG_HOMEPAGE"),
+        env!("CARGO_PKG_REPOSITORY"),
     ),
     version,
     display_name = "Tagref",
