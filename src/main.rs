@@ -89,7 +89,7 @@ enum Subcommand {
 }
 
 // Program entrypoint
-#[allow(clippy::too_many_lines)]
+#[expect(clippy::too_many_lines)]
 fn entry() -> Result<(), String> {
     // Determine whether to print colored output.
     colored::control::set_override(io::stdout().is_terminal());
