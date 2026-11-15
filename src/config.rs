@@ -35,7 +35,6 @@ pub struct Config {
 }
 
 // The on-disk `tagref.yml` schema
-#[allow(clippy::struct_field_names)]
 #[derive(Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RawConfig {
